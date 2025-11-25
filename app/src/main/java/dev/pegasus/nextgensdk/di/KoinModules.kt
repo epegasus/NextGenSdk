@@ -22,7 +22,13 @@ private val managerModule = module {
 }
 
 private val adsModule = module {
-    single { InterstitialAdsConfig(androidContext().resources, get(), get()) }
+    single {
+        InterstitialAdsConfig(
+            resources = androidContext().resources,
+            sharedPreferencesDataSource = get(),
+            internetManager = get()
+        )
+    }
 }
 
 val appModules = listOf(
