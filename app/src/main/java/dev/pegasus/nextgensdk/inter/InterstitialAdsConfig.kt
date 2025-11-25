@@ -9,7 +9,7 @@ import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.inter.manager.InterstitialAdsManager
-import dev.pegasus.nextgensdk.utils.Constants
+import dev.pegasus.nextgensdk.utils.Constants.TAG_ADS
 import dev.pegasus.nextgensdk.utils.InternetManager
 import dev.pegasus.nextgensdk.utils.SharedPreferencesDataSource
 
@@ -23,10 +23,7 @@ class InterstitialAdsConfig(
 
     private val adUnitIdMap = mutableMapOf<String, String>()
 
-    fun loadInterstitialAd(
-        adType: InterAdKey,
-        listener: InterstitialOnLoadCallBack? = null
-    ) {
+    fun loadInterstitialAd(adType: InterAdKey, listener: InterstitialOnLoadCallBack? = null) {
         var interAdId: String
         var isRemoteEnable: Boolean
 
@@ -63,7 +60,7 @@ class InterstitialAdsConfig(
             val counter = counterMap[adType.value] ?: 0
             counterMap[adType.value] = counter + 1
             counterMap[adType.value]?.let { currentCounter ->
-                Log.d(Constants.TAG_ADS, "${adType.value} -> loadInterstitial_Counter ----- Total Counter: $remoteCounter, Current Counter: $currentCounter")
+                Log.d(TAG_ADS, "${adType.value} -> loadInterstitial_Counter ----- Total Counter: $remoteCounter, Current Counter: $currentCounter")
                 if (currentCounter >= remoteCounter - 1) {
                     counterMap[adType.value] = 0
                     loadInterstitialAd(adType = adType, listener = listener)
@@ -75,13 +72,9 @@ class InterstitialAdsConfig(
         listener?.onResponse(false)
     }
 
-    fun showInterstitialAd(
-        activity: Activity?,
-        adType: InterAdKey,
-        listener: InterstitialOnShowCallBack? = null
-    ) {
+    fun showInterstitialAd(activity: Activity?, adType: InterAdKey, listener: InterstitialOnShowCallBack? = null) {
         val adUnitId = adUnitIdMap[adType.value] ?: run {
-            Log.e(Constants.TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found. Make sure to load ad first.")
+            Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found. Make sure to load ad first.")
             listener?.onAdFailedToShow()
             return
         }
