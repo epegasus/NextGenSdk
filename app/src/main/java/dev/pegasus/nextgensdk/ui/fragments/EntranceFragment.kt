@@ -6,11 +6,11 @@ import android.util.Log
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 import dev.pegasus.nextgensdk.databinding.FragmentEntranceBinding
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
+import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 import dev.pegasus.nextgensdk.utils.constants.Constants
 
 class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceBinding::inflate) {
@@ -39,6 +39,7 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
 
 
     private fun onAdResponse(successfullyLoaded: Boolean) {
+        if (isAdded.not()) return
         binding.cpiProgress.visibility = View.GONE
         binding.mbShowAd.isEnabled = true
         binding.mtvTitle.text = "Ad loaded: $successfullyLoaded"
