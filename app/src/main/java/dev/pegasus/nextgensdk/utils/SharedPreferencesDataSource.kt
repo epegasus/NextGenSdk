@@ -30,6 +30,7 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     val bannerHome = "bannerHome"
 
     val interEntrance = "interEntrance"
+    val interLanguage = "interLanguage"
     val interOnBoarding = "interOnBoarding"
 
     val nativeLanguage = "nativeLanguage"
@@ -65,6 +66,10 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     var rcInterEntrance: Int
         get() = sharedPreferences.getInt(interEntrance, 1)
         set(value) = sharedPreferences.edit { putInt(interEntrance, value) }
+
+    var rcInterLanguage: Int
+        get() = sharedPreferences.getInt(interLanguage, 1)
+        set(value) = sharedPreferences.edit { putInt(interLanguage, value) }
 
     var rcInterOnBoarding: Int
         get() = sharedPreferences.getInt(interOnBoarding, 0)

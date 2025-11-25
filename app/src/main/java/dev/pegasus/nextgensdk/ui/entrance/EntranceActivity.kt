@@ -1,6 +1,9 @@
 package dev.pegasus.nextgensdk.ui.entrance
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +12,7 @@ import dev.pegasus.nextgensdk.di.DIComponent
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
+import dev.pegasus.nextgensdk.ui.language.LanguageActivity
 import dev.pegasus.nextgensdk.utils.Constants.TAG_ADS
 
 class EntranceActivity : AppCompatActivity() {
@@ -20,35 +24,37 @@ class EntranceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        loadAds()
+        loadAd()
+        startTimeout()
 
-        binding.mbShowAd.setOnClickListener { showAds() }
+        binding.mbShowAd.setOnClickListener { showAd() }
     }
 
-    private fun loadAds() {
+    private fun loadAd() {
         diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnLoadCallBack {
             override fun onResponse(successfullyLoaded: Boolean) {
                 binding.cpiProgress.visibility = View.GONE
                 binding.mbShowAd.isEnabled = true
                 binding.mtvTitle.text = "Ad loaded: $successfullyLoaded"
-                if (successfullyLoaded) {
-                    Log.d(TAG_ADS, "EntranceActivity -> loadAds: Ad loaded successfully")
-                } else {
-                    Log.e(TAG_ADS, "EntranceActivity -> loadAds: Ad failed to load")
-                }
             }
         })
     }
 
-    fun showAds() {
-        diComponent.interstitialAdsConfig.showInterstitialAd(activity = this, adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnShowCallBack {
-            override fun onAdFailedToShow() {
-                Log.e(TAG_ADS, "EntranceActivity -> showAds: onAdFailedToShow")
-            }
+    private fun startTimeout() {
+        Handler(Looper.getMainLooper()).postDelayed({
+            Log.d(TAG_ADS, "startTimeout: Starting timeout")
+            showAd()
+        }, 2000)
+    }
 
-            override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG_ADS, "EntranceActivity -> showAds: onAdDismissedFullScreenContent")
-            }
+    fun showAd() {
+        diComponent.interstitialAdsConfig.showInterstitialAd(activity = this, adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnShowCallBack {
+            override fun onAdFailedToShow() = navigateScreen()
+            override fun onAdDismissedFullScreenContent() = navigateScreen()
         })
+    }
+
+    private fun navigateScreen() {
+        startActivity(Intent(this, LanguageActivity::class.java))
     }
 }

@@ -193,7 +193,7 @@ abstract class InterstitialAdsManager(
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdImpression: called")
                 postToMain { listener?.onAdImpression() }
                 postToMainDelayed { listener?.onAdImpressionDelayed() }
-                destroyPreload(adUnitId)
+                stopPreloading(adUnitId)
             }
 
             override fun onAdDismissedFullScreenContent() {
@@ -236,7 +236,7 @@ abstract class InterstitialAdsManager(
         try {
             destroyPreload(adUnitId)
             preloadStatusMap[adUnitId] = false
-            Log.d(TAG_ADS, "stopPreloading: Stopped preloading for ad unit: $adUnitId")
+            Log.e(TAG_ADS, "stopPreloading: Stopped preloading for ad unit: $adUnitId")
         } catch (e: Exception) {
             Log.e(TAG_ADS, "stopPreloading: Exception: ${e.message}", e)
         }

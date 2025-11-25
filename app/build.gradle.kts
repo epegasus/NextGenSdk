@@ -26,6 +26,7 @@ android {
             resValue("string", "admob_banner_entrance_id", "ca-app-pub-3940256099942544/2014213617")
 
             resValue("string", "admob_inter_entrance_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_language_id", "ca-app-pub-3940256099942544/1033173712")
 
             resValue("string", "admob_native_language_id", "ca-app-pub-3940256099942544/2247696110")
 
@@ -42,6 +43,7 @@ android {
             resValue("string", "admob_banner_entrance_id", "ca-app-pub-3940256099942544/2014213617")
 
             resValue("string", "admob_inter_entrance_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_language_id", "ca-app-pub-3940256099942544/1033173712")
 
             resValue("string", "admob_native_language_id", "ca-app-pub-3940256099942544/2247696110")
 

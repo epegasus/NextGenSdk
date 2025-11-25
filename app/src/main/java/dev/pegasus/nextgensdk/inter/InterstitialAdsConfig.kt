@@ -32,6 +32,10 @@ class InterstitialAdsConfig(
                 interAdId = getResString(R.string.admob_inter_entrance_id)
                 isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0
             }
+            InterAdKey.LANGUAGE -> {
+                interAdId = getResString(R.string.admob_inter_language_id)
+                isRemoteEnable = sharedPreferencesDataSource.rcInterLanguage != 0
+            }
         }
 
         adUnitIdMap[adType.value] = interAdId
