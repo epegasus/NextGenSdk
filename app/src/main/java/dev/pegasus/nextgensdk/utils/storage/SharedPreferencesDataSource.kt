@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.utils
+package dev.pegasus.nextgensdk.utils.storage
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
@@ -30,8 +30,8 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     val bannerHome = "bannerHome"
 
     val interEntrance = "interEntrance"
-    val interLanguage = "interLanguage"
     val interOnBoarding = "interOnBoarding"
+    val interDashboard = "interDashboard"
 
     val nativeLanguage = "nativeLanguage"
     val nativeOnBoarding = "nativeOnBoarding"
@@ -67,13 +67,13 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
         get() = sharedPreferences.getInt(interEntrance, 1)
         set(value) = sharedPreferences.edit { putInt(interEntrance, value) }
 
-    var rcInterLanguage: Int
-        get() = sharedPreferences.getInt(interLanguage, 1)
-        set(value) = sharedPreferences.edit { putInt(interLanguage, value) }
-
     var rcInterOnBoarding: Int
-        get() = sharedPreferences.getInt(interOnBoarding, 0)
+        get() = sharedPreferences.getInt(interOnBoarding, 1)
         set(value) = sharedPreferences.edit { putInt(interOnBoarding, value) }
+
+    var rcInterDashboard: Int
+        get() = sharedPreferences.getInt(interDashboard, 1)
+        set(value) = sharedPreferences.edit { putInt(interDashboard, value) }
 
     /**
      *  ------------------- Native Ads -------------------

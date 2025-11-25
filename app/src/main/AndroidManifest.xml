@@ -12,13 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NextGenSdk">
         <activity
-            android:name=".ui.language.LanguageActivity"
+            android:name=".ui.activities.StartActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.entrance.EntranceActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

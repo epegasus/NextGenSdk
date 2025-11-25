@@ -16,9 +16,9 @@ import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEv
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPreloader
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.utils.Constants.TAG_ADS
-import dev.pegasus.nextgensdk.utils.InternetManager
-import dev.pegasus.nextgensdk.utils.SharedPreferencesDataSource
+import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
+import dev.pegasus.nextgensdk.utils.network.InternetManager
+import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
 
 abstract class InterstitialAdsManager(
     protected val sharedPreferencesDataSource: SharedPreferencesDataSource,

@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.ui
+package dev.pegasus.nextgensdk.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,7 +7,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.libraries.ads.mobile.sdk.MobileAds
 import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import dev.pegasus.nextgensdk.databinding.ActivityMainBinding
-import dev.pegasus.nextgensdk.ui.entrance.EntranceActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAds() {
-        startActivity(Intent(this, EntranceActivity::class.java))
+        startActivity(Intent(this, StartActivity::class.java))
         finish()
     }
 }

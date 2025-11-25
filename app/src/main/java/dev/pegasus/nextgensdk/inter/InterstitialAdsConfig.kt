@@ -9,9 +9,9 @@ import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.inter.manager.InterstitialAdsManager
-import dev.pegasus.nextgensdk.utils.Constants.TAG_ADS
-import dev.pegasus.nextgensdk.utils.InternetManager
-import dev.pegasus.nextgensdk.utils.SharedPreferencesDataSource
+import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
+import dev.pegasus.nextgensdk.utils.network.InternetManager
+import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
 
 class InterstitialAdsConfig(
     private val resources: Resources,
@@ -37,9 +37,14 @@ class InterstitialAdsConfig(
                 isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0
             }
 
-            InterAdKey.LANGUAGE -> {
-                interAdId = getResString(R.string.admob_inter_language_id)
-                isRemoteEnable = sharedPreferencesDataSource.rcInterLanguage != 0
+            InterAdKey.ON_BOARDING -> {
+                interAdId = getResString(R.string.admob_inter_on_boarding_id)
+                isRemoteEnable = sharedPreferencesDataSource.rcInterOnBoarding != 0
+            }
+
+            InterAdKey.DASHBOARD -> {
+                interAdId = getResString(R.string.admob_inter_dashboard_id)
+                isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0
             }
         }
 

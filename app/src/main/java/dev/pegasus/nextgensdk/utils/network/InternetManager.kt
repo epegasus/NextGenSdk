@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.utils
+package dev.pegasus.nextgensdk.utils.network
 
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities

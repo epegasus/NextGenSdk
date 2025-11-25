@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">NextGenSdk</string>
+
+    <string name="entrance_screen">Entrance Screen</string>
     <string name="language_screen">Language Screen</string>
     <string name="onboarding_screen">OnBoarding Screen</string>
     <string name="dashboard_screen">Dashboard Screen</string>

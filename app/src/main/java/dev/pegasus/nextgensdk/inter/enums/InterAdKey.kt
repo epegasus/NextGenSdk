@@ -2,5 +2,6 @@ package dev.pegasus.nextgensdk.inter.enums
 
 enum class InterAdKey(val value: String) {
     ENTRANCE("entrance"),
-    LANGUAGE("language"),
+    ON_BOARDING("onBoarding"),
+    DASHBOARD("dashboard"),
 }

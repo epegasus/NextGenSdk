@@ -26,7 +26,8 @@ android {
             resValue("string", "admob_banner_entrance_id", "ca-app-pub-3940256099942544/2014213617")
 
             resValue("string", "admob_inter_entrance_id", "ca-app-pub-3940256099942544/1033173712")
-            resValue("string", "admob_inter_language_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_on_boarding_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_dashboard_id", "ca-app-pub-3940256099942544/1033173712")
 
             resValue("string", "admob_native_language_id", "ca-app-pub-3940256099942544/2247696110")
 
@@ -43,7 +44,8 @@ android {
             resValue("string", "admob_banner_entrance_id", "ca-app-pub-3940256099942544/2014213617")
 
             resValue("string", "admob_inter_entrance_id", "ca-app-pub-3940256099942544/1033173712")
-            resValue("string", "admob_inter_language_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_on_boarding_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_dashboard_id", "ca-app-pub-3940256099942544/1033173712")
 
             resValue("string", "admob_native_language_id", "ca-app-pub-3940256099942544/2247696110")
 
@@ -74,10 +76,15 @@ dependencies {
     // Lifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    // Navigational Components
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+
     // GMS (NextGen)
     implementation(libs.ads.mobile.sdk)
     //implementation(libs.play.services.ads)
 
     // Koin
     implementation(libs.koin.android)
+    implementation(libs.androidx.fragment)
 }
