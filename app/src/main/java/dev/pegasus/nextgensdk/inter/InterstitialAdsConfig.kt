@@ -25,26 +25,33 @@ class InterstitialAdsConfig(
 
     fun loadInterstitialAd(
         adType: InterAdKey,
-        bufferSize: Int? = 1,
         listener: InterstitialOnLoadCallBack? = null
     ) {
         var interAdId: String
         var isRemoteEnable: Boolean
+        var bufferSize: Int?
+        var reuseAd: Boolean
 
         when (adType) {
             InterAdKey.ENTRANCE -> {
                 interAdId = getResString(R.string.admob_inter_entrance_id)
                 isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0
+                bufferSize = null
+                reuseAd = true
             }
 
             InterAdKey.ON_BOARDING -> {
                 interAdId = getResString(R.string.admob_inter_on_boarding_id)
                 isRemoteEnable = sharedPreferencesDataSource.rcInterOnBoarding != 0
+                bufferSize = null
+                reuseAd = true
             }
 
             InterAdKey.DASHBOARD -> {
                 interAdId = getResString(R.string.admob_inter_dashboard_id)
                 isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0
+                bufferSize = 1
+                reuseAd = true
             }
         }
 

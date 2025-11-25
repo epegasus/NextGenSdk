@@ -30,7 +30,7 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
     }
 
     private fun loadAd() {
-        diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, bufferSize = null, listener = object : InterstitialOnLoadCallBack {
+        diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnLoadCallBack {
             override fun onResponse(successfullyLoaded: Boolean) {
                 onAdResponse(successfullyLoaded)
             }

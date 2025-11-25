@@ -22,7 +22,7 @@ class OnBoardingFragment : BaseFragment<FragmentOnBoardingBinding>(FragmentOnBoa
     }
 
     private fun loadInterstitialAd() {
-        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.ON_BOARDING, bufferSize = null)
+        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.ON_BOARDING)
     }
 
     private fun checkInterstitialAd() {
