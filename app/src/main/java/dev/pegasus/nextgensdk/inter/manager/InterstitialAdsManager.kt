@@ -26,6 +26,15 @@ abstract class InterstitialAdsManager(
 ) {
 
     private val preloadStatusMap = mutableMapOf<String, Boolean>()
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    private fun postToMain(action: () -> Unit) {
+        mainHandler.post(action)
+    }
+
+    private fun postToMainDelayed(delayMillis: Long = 300, action: () -> Unit) {
+        mainHandler.postDelayed(action, delayMillis)
+    }
 
     private fun createPreloadConfig(adUnitId: String, bufferSize: Int = 1): PreloadConfiguration {
         val adRequest = AdRequest.Builder(adUnitId).build()
@@ -77,8 +86,7 @@ abstract class InterstitialAdsManager(
 
         if (preloadStatusMap[adUnitId] == true) {
             Log.i(TAG_ADS, "$adType -> startPreloading: Preload already started for ad unit: $adUnitId")
-            val isAvailable = isAdAvailable(adUnitId)
-            listener?.onResponse(isAvailable)
+            listener?.onResponse(isAdAvailable(adUnitId))
             return
         }
 
@@ -95,13 +103,13 @@ abstract class InterstitialAdsManager(
             override fun onAdPreloaded(preloadId: String, responseInfo: ResponseInfo) {
                 Log.i(TAG_ADS, "$adType -> startPreloading: onAdPreloaded: preloadId: $preloadId")
                 preloadStatusMap[adUnitId] = true
-                listener?.onResponse(true)
+                postToMain { listener?.onResponse(true) }
             }
 
             override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
                 Log.e(TAG_ADS, "$adType -> startPreloading: onAdFailedToPreload: preloadId: $preloadId, adMessage: ${adError.message}")
                 preloadStatusMap[adUnitId] = false
-                listener?.onResponse(false)
+                postToMain { listener?.onResponse(false) }
             }
 
             override fun onAdsExhausted(preloadId: String) {
@@ -116,8 +124,7 @@ abstract class InterstitialAdsManager(
             if (!isIdInUse) {
                 Log.d(TAG_ADS, "$adType -> startPreloading: Preload ID is already in use")
                 preloadStatusMap[adUnitId] = true
-                val isAvailable = isAdAvailable(adUnitId)
-                listener?.onResponse(isAvailable)
+                listener?.onResponse(isAdAvailable(adUnitId))
             } else {
                 preloadStatusMap[adUnitId] = true
             }
@@ -134,7 +141,6 @@ abstract class InterstitialAdsManager(
         adUnitId: String,
         listener: InterstitialOnShowCallBack?
     ) {
-
         if (sharedPreferencesDataSource.isAppPurchased) {
             Log.e(TAG_ADS, "$adType -> showPreloadedAd: Premium user")
             listener?.onAdFailedToShow()
@@ -179,33 +185,33 @@ abstract class InterstitialAdsManager(
             override fun onAdShowedFullScreenContent() {
                 super.onAdShowedFullScreenContent()
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdShowedFullScreenContent: called")
-                listener?.onAdShowedFullScreenContent()
+                postToMain { listener?.onAdShowedFullScreenContent() }
             }
 
             override fun onAdImpression() {
                 super.onAdImpression()
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdImpression: called")
-                listener?.onAdImpression()
-                Handler(Looper.getMainLooper()).postDelayed({ listener?.onAdImpressionDelayed() }, 300)
+                postToMain { listener?.onAdImpression() }
+                postToMainDelayed { listener?.onAdImpressionDelayed() }
                 destroyPreload(adUnitId)
             }
 
             override fun onAdDismissedFullScreenContent() {
                 super.onAdDismissedFullScreenContent()
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdDismissedFullScreenContent: called")
-                listener?.onAdDismissedFullScreenContent()
+                postToMain { listener?.onAdDismissedFullScreenContent() }
             }
 
             override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
                 super.onAdFailedToShowFullScreenContent(fullScreenContentError)
                 Log.e(TAG_ADS, "$adType -> showPreloadedAd: onAdFailedToShowFullScreenContent: ${fullScreenContentError.code} -- ${fullScreenContentError.message}")
-                listener?.onAdFailedToShow()
+                postToMain { listener?.onAdFailedToShow() }
             }
 
             override fun onAdClicked() {
                 super.onAdClicked()
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdClicked: called")
-                listener?.onAdClicked()
+                postToMain { listener?.onAdClicked() }
             }
 
             override fun onAdPaid(value: AdValue) {
