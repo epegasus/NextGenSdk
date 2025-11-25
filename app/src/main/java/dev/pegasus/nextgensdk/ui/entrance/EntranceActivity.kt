@@ -31,7 +31,7 @@ class EntranceActivity : AppCompatActivity() {
     }
 
     private fun loadAd() {
-        diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnLoadCallBack {
+        diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, bufferSize = null, listener = object : InterstitialOnLoadCallBack {
             override fun onResponse(successfullyLoaded: Boolean) {
                 binding.cpiProgress.visibility = View.GONE
                 binding.mbShowAd.isEnabled = true

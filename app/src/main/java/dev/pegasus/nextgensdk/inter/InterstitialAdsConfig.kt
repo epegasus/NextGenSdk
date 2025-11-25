@@ -23,7 +23,11 @@ class InterstitialAdsConfig(
 
     private val adUnitIdMap = mutableMapOf<String, String>()
 
-    fun loadInterstitialAd(adType: InterAdKey, listener: InterstitialOnLoadCallBack? = null) {
+    fun loadInterstitialAd(
+        adType: InterAdKey,
+        bufferSize: Int? = 1,
+        listener: InterstitialOnLoadCallBack? = null
+    ) {
         var interAdId: String
         var isRemoteEnable: Boolean
 
@@ -32,6 +36,7 @@ class InterstitialAdsConfig(
                 interAdId = getResString(R.string.admob_inter_entrance_id)
                 isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0
             }
+
             InterAdKey.LANGUAGE -> {
                 interAdId = getResString(R.string.admob_inter_language_id)
                 isRemoteEnable = sharedPreferencesDataSource.rcInterLanguage != 0
@@ -44,7 +49,7 @@ class InterstitialAdsConfig(
             adType = adType.value,
             adUnitId = interAdId,
             isRemoteEnable = isRemoteEnable,
-            bufferSize = 1,
+            bufferSize = bufferSize,
             listener = listener
         )
     }

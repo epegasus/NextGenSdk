@@ -24,7 +24,7 @@ class LanguageActivity : AppCompatActivity() {
     }
 
     private fun loadAd() {
-        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.LANGUAGE)
+        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.LANGUAGE, bufferSize = null)
     }
 
     private fun showAd() {

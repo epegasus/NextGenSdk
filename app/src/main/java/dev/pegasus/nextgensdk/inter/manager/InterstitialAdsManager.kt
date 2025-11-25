@@ -36,7 +36,7 @@ abstract class InterstitialAdsManager(
         mainHandler.postDelayed(action, delayMillis)
     }
 
-    private fun createPreloadConfig(adUnitId: String, bufferSize: Int = 1): PreloadConfiguration {
+    private fun createPreloadConfig(adUnitId: String, bufferSize: Int? = null): PreloadConfiguration {
         val adRequest = AdRequest.Builder(adUnitId).build()
         return PreloadConfiguration(adRequest, bufferSize)
     }
@@ -57,7 +57,7 @@ abstract class InterstitialAdsManager(
         adType: String,
         adUnitId: String,
         isRemoteEnable: Boolean,
-        bufferSize: Int = 1,
+        bufferSize: Int?,
         listener: InterstitialOnLoadCallBack? = null
     ) {
         if (!isRemoteEnable) {
@@ -193,6 +193,7 @@ abstract class InterstitialAdsManager(
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdImpression: called")
                 postToMain { listener?.onAdImpression() }
                 postToMainDelayed { listener?.onAdImpressionDelayed() }
+                // Stop if bufferSize is passed `null`
                 stopPreloading(adUnitId)
             }
 
