@@ -11,17 +11,6 @@ import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.utils.Constants.TAG_ADS
 
-/**
- * Created by: Sohaib Ahmed
- * Date: 1/16/2025
- *
- * Links:
- * - LinkedIn: https://linkedin.com/in/epegasus
- * - GitHub: https://github.com/epegasus
- *
- * Example implementation of loading and showing interstitial ads
- */
-
 class EntranceActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityEntranceBinding.inflate(layoutInflater) }
@@ -36,9 +25,6 @@ class EntranceActivity : AppCompatActivity() {
         binding.mbShowAd.setOnClickListener { showAds() }
     }
 
-    /**
-     * Load interstitial ad with callback
-     */
     private fun loadAds() {
         diComponent.interstitialAdsConfig.loadInterstitialAd(
             adType = InterAdKey.ENTRANCE,
@@ -59,10 +45,6 @@ class EntranceActivity : AppCompatActivity() {
         )
     }
 
-    /**
-     * Show interstitial ad when ready
-     * Call this method when you want to show the ad (e.g., on button click, on back press, etc.)
-     */
     fun showAds() {
         if (diComponent.interstitialAdsConfig.isInterstitialAdLoaded(InterAdKey.ENTRANCE)) {
             diComponent.interstitialAdsConfig.showInterstitialAd(
@@ -72,19 +54,16 @@ class EntranceActivity : AppCompatActivity() {
                     override fun onAdShowedFullScreenContent() {
                         super.onAdShowedFullScreenContent()
                         Log.d(TAG_ADS, "EntranceActivity -> showAds: onAdShowedFullScreenContent")
-                        // Ad is showing, pause your game/activity if needed
                     }
 
                     override fun onAdDismissedFullScreenContent() {
                         super.onAdDismissedFullScreenContent()
                         Log.d(TAG_ADS, "EntranceActivity -> showAds: onAdDismissedFullScreenContent")
-                        // Ad dismissed, resume your game/activity if needed
                     }
 
                     override fun onAdFailedToShow() {
                         super.onAdFailedToShow()
                         Log.e(TAG_ADS, "EntranceActivity -> showAds: onAdFailedToShow")
-                        // Ad failed to show, handle accordingly
                     }
 
                     override fun onAdImpression() {
@@ -108,7 +87,5 @@ class EntranceActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Optional: Stop preloading when activity is destroyed to free resources
-        // diComponent.interstitialAdsConfig.stopPreloading(InterAdKey.ENTRANCE)
     }
 }

@@ -13,54 +13,32 @@ import dev.pegasus.nextgensdk.utils.Constants
 import dev.pegasus.nextgensdk.utils.InternetManager
 import dev.pegasus.nextgensdk.utils.SharedPreferencesDataSource
 
-/**
- * Created by: Sohaib Ahmed
- * Date: 1/16/2025
- *
- * Links:
- * - LinkedIn: https://linkedin.com/in/epegasus
- * - GitHub: https://github.com/epegasus
- *
- * Configuration class for Interstitial Ads using AdMob Next-Gen SDK Preload API
- * Extends InterstitialAdsManager and adds counter logic and ad unit mapping
- */
-
 class InterstitialAdsConfig(
     private val resources: Resources,
     sharedPreferencesDataSource: SharedPreferencesDataSource,
     internetManager: InternetManager
 ) : InterstitialAdsManager(sharedPreferencesDataSource, internetManager) {
 
-    // Counter map for managing ad load frequency (similar to old template)
     private val counterMap by lazy { HashMap<String, Int>() }
 
-    // Map to store ad unit IDs for each ad key
     private val adUnitIdMap = mutableMapOf<String, String>()
 
-    /**
-     * Load interstitial ad with remote config validation
-     * @param adType The ad key enum
-     * @param listener Optional callback for load result
-     */
     fun loadInterstitialAd(
         adType: InterAdKey,
         listener: InterstitialOnLoadCallBack? = null
     ) {
-        var interAdId = ""
-        var isRemoteEnable = false
+        var interAdId: String
+        var isRemoteEnable: Boolean
 
         when (adType) {
             InterAdKey.ENTRANCE -> {
                 interAdId = getResString(R.string.admob_inter_entrance_id)
                 isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0
             }
-            // Add more ad types here as needed
         }
 
-        // Store ad unit ID for this ad type
         adUnitIdMap[adType.value] = interAdId
 
-        // Start preloading with buffer size 1
         startPreloading(
             adType = adType.value,
             adUnitId = interAdId,
@@ -70,20 +48,6 @@ class InterstitialAdsConfig(
         )
     }
 
-    /**
-     * Load interstitial ad with counter logic (similar to old template)
-     * @param adType The ad key enum
-     * @param remoteCounter Pass remote counter value, if the value is n, it will load on "n-1". In case of <= 2, it will load everytime
-     * @param loadOnStart Determine whether ad should be load on the very first time or not?
-     * @param listener Optional callback for load result
-     *
-     * e.g. remoteCounter = 3, ad will load on "n-1" = 2
-     *     if (loadOnStart) {
-     *         // 1, 0, 0, 1, 0, 0, 1, 0, 0 ... so on
-     *     } else {
-     *         // 0, 0, 1, 0, 0, 1, 0, 0, 1 ... so on
-     *     }
-     */
     fun loadInterstitialAd(
         adType: InterAdKey,
         remoteCounter: Int,
@@ -108,16 +72,9 @@ class InterstitialAdsConfig(
             }
         }
 
-        // Counter not reached
         listener?.onResponse(false)
     }
 
-    /**
-     * Show interstitial ad with all validations
-     * @param activity The activity to show the ad
-     * @param adType The ad key enum
-     * @param listener Optional callback for show events
-     */
     fun showInterstitialAd(
         activity: Activity?,
         adType: InterAdKey,
@@ -137,28 +94,16 @@ class InterstitialAdsConfig(
         )
     }
 
-    /**
-     * Check if interstitial ad is loaded/available
-     * @param adType The ad key enum
-     * @return true if ad is available, false otherwise
-     */
     fun isInterstitialAdLoaded(adType: InterAdKey): Boolean {
         val adUnitId = adUnitIdMap[adType.value] ?: return false
         return isInterstitialAvailable(adUnitId)
     }
 
-    /**
-     * Stop preloading for a specific ad type
-     * @param adType The ad key enum
-     */
     fun stopPreloading(adType: InterAdKey) {
         val adUnitId = adUnitIdMap[adType.value] ?: return
         stopPreloading(adUnitId)
     }
 
-    /**
-     * Get resource string by ID
-     */
     private fun getResString(@StringRes resId: Int): String {
         return resources.getString(resId)
     }
