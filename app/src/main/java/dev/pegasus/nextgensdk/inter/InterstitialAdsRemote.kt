@@ -1,5 +1,6 @@
 package dev.pegasus.nextgensdk.inter
 
+import android.app.Activity
 import android.util.Log
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
@@ -43,7 +44,7 @@ class InterstitialAdsRemote {
         awaitClose { }
     }
 
-    fun showInterstitialAd(key: String, adUnitId: String) {
+    fun showInterstitialAd(activity: Activity?, key: String, adUnitId: String) {
         // Polling returns the next available ad and loads another ad in the background
         val ad = InterstitialAdPreloader.pollAd(adUnitId)
         ad?.adEventCallback = object : InterstitialAdEventCallback {
@@ -67,5 +68,6 @@ class InterstitialAdsRemote {
                 Log.e(Constants.TAG_ADS, "$key -> showInterstitialAd: onAdFailedToShowFullScreenContent: ${fullScreenContentError.code} -- ${fullScreenContentError.message}")
             }
         }
+        activity?.let { ad?.show(it) } ?: Log.e(Constants.TAG_ADS, "$key -> showInterstitialAd: activity is null")
     }
 }
