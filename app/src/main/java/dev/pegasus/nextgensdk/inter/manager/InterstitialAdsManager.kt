@@ -27,7 +27,7 @@ abstract class InterstitialAdsManager(
 ) {
 
     private val preloadStatusMap = ConcurrentHashMap<String, Boolean>()
-    private val bufferSizeMap = ConcurrentHashMap<String, Int?>()
+    private val bufferSizeMap = ConcurrentHashMap<String, Int>()
     private val adShownMap = ConcurrentHashMap<String, Boolean>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -88,7 +88,9 @@ abstract class InterstitialAdsManager(
             return
         }
 
-        bufferSizeMap[adUnitId] = bufferSize
+        if (bufferSize != null) {
+            bufferSizeMap[adUnitId] = bufferSize
+        }
 
         if (preloadStatusMap[adUnitId] == true) {
             Log.i(TAG_ADS, "$adType -> startPreloading: Preload already started for ad unit: $adUnitId")
@@ -115,7 +117,7 @@ abstract class InterstitialAdsManager(
             override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
                 Log.e(TAG_ADS, "$adType -> startPreloading: onAdFailedToPreload: preloadId: $preloadId, adMessage: ${adError.message}")
                 preloadStatusMap[adUnitId] = false
-                if (bufferSizeMap[adUnitId] == null) {
+                if (!bufferSizeMap.containsKey(adUnitId)) {
                     stopPreloading(adUnitId)
                 }
                 postToMain { listener?.onResponse(false) }
@@ -203,7 +205,7 @@ abstract class InterstitialAdsManager(
                 adShownMap[adUnitId] = true
                 postToMain { listener?.onAdImpression() }
                 postToMainDelayed { listener?.onAdImpressionDelayed() }
-                if (bufferSizeMap[adUnitId] == null) {
+                if (!bufferSizeMap.containsKey(adUnitId)) {
                     stopPreloading(adUnitId)
                 }
             }
@@ -217,7 +219,7 @@ abstract class InterstitialAdsManager(
             override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
                 super.onAdFailedToShowFullScreenContent(fullScreenContentError)
                 Log.e(TAG_ADS, "$adType -> showPreloadedAd: onAdFailedToShowFullScreenContent: ${fullScreenContentError.code} -- ${fullScreenContentError.message}")
-                if (bufferSizeMap[adUnitId] == null) {
+                if (!bufferSizeMap.containsKey(adUnitId)) {
                     stopPreloading(adUnitId)
                 }
                 postToMain { listener?.onAdFailedToShow() }
