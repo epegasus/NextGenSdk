@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue
 import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback
@@ -18,15 +19,16 @@ import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
 import dev.pegasus.nextgensdk.utils.network.InternetManager
 import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
+import java.util.concurrent.ConcurrentHashMap
 
 abstract class InterstitialAdsManager(
     protected val sharedPreferencesDataSource: SharedPreferencesDataSource,
     protected val internetManager: InternetManager
 ) {
 
-    private val preloadStatusMap = mutableMapOf<String, Boolean>()
-    private val bufferSizeMap = mutableMapOf<String, Int?>()
-    private val adShownMap = mutableMapOf<String, Boolean>()
+    private val preloadStatusMap = ConcurrentHashMap<String, Boolean>()
+    private val bufferSizeMap = ConcurrentHashMap<String, Int?>()
+    private val adShownMap = ConcurrentHashMap<String, Boolean>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private fun postToMain(action: () -> Unit) {
@@ -226,6 +228,11 @@ abstract class InterstitialAdsManager(
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdClicked: called")
                 postToMain { listener?.onAdClicked() }
             }
+
+            override fun onAdPaid(value: AdValue) {
+                super.onAdPaid(value)
+                Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdPaid: ${value.valueMicros} ${value.currencyCode}")
+            }
         }
 
         try {
@@ -243,8 +250,9 @@ abstract class InterstitialAdsManager(
     fun stopPreloading(adUnitId: String) {
         try {
             destroyPreload(adUnitId)
-            preloadStatusMap[adUnitId] = false
+            preloadStatusMap.remove(adUnitId)
             bufferSizeMap.remove(adUnitId)
+            adShownMap.remove(adUnitId)
             Log.d(TAG_ADS, "stopPreloading: Stopped preloading for ad unit: $adUnitId")
         } catch (e: Exception) {
             Log.e(TAG_ADS, "stopPreloading: Exception: ${e.message}", e)
@@ -257,5 +265,12 @@ abstract class InterstitialAdsManager(
 
     protected fun wasAdShown(adUnitId: String): Boolean {
         return adShownMap[adUnitId] == true
+    }
+
+    fun clearAll() {
+        preloadStatusMap.clear()
+        bufferSizeMap.clear()
+        adShownMap.clear()
+        mainHandler.removeCallbacksAndMessages(null)
     }
 }

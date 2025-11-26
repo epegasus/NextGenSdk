@@ -12,6 +12,7 @@ import dev.pegasus.nextgensdk.inter.manager.InterstitialAdsManager
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
 import dev.pegasus.nextgensdk.utils.network.InternetManager
 import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
+import java.util.concurrent.ConcurrentHashMap
 
 class InterstitialAdsConfig(
     private val resources: Resources,
@@ -19,46 +20,49 @@ class InterstitialAdsConfig(
     internetManager: InternetManager
 ) : InterstitialAdsManager(sharedPreferencesDataSource, internetManager) {
 
-    private val counterMap by lazy { HashMap<String, Int>() }
-    private val adUnitIdMap = mutableMapOf<String, String>()
-    private val reuseAdMap = mutableMapOf<String, Boolean>()
+    private val counterMap = ConcurrentHashMap<String, Int>()
+    private val adUnitIdMap = ConcurrentHashMap<String, String>()
+    private val reuseAdMap = ConcurrentHashMap<String, Boolean>()
+
+    private fun getAdConfig(adType: InterAdKey): AdConfig? {
+        return when (adType) {
+            InterAdKey.ENTRANCE -> AdConfig(
+                adUnitId = getResString(R.string.admob_inter_entrance_id),
+                isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0,
+                bufferSize = null,
+                reuseAd = true
+            )
+
+            InterAdKey.ON_BOARDING -> AdConfig(
+                adUnitId = getResString(R.string.admob_inter_on_boarding_id),
+                isRemoteEnable = sharedPreferencesDataSource.rcInterOnBoarding != 0,
+                bufferSize = null,
+                reuseAd = true
+            )
+
+            InterAdKey.DASHBOARD -> AdConfig(
+                adUnitId = getResString(R.string.admob_inter_dashboard_id),
+                isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0,
+                bufferSize = 1,
+                reuseAd = true
+            )
+        }
+    }
 
     fun loadInterstitialAd(
         adType: InterAdKey,
         listener: InterstitialOnLoadCallBack? = null
     ) {
-        var interAdId: String
-        var isRemoteEnable: Boolean
-        var bufferSize: Int?
-        var reuseAd: Boolean
-
-        when (adType) {
-            InterAdKey.ENTRANCE -> {
-                interAdId = getResString(R.string.admob_inter_entrance_id)
-                isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0
-                bufferSize = null
-                reuseAd = true
-            }
-
-            InterAdKey.ON_BOARDING -> {
-                interAdId = getResString(R.string.admob_inter_on_boarding_id)
-                isRemoteEnable = sharedPreferencesDataSource.rcInterOnBoarding != 0
-                bufferSize = null
-                reuseAd = true
-            }
-
-            InterAdKey.DASHBOARD -> {
-                interAdId = getResString(R.string.admob_inter_dashboard_id)
-                isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0
-                bufferSize = 1
-                reuseAd = true
-            }
+        val config = getAdConfig(adType) ?: run {
+            Log.e(TAG_ADS, "${adType.value} -> loadInterstitialAd: Unknown ad type")
+            listener?.onResponse(false)
+            return
         }
 
-        adUnitIdMap[adType.value] = interAdId
-        reuseAdMap[adType.value] = reuseAd
+        adUnitIdMap[adType.value] = config.adUnitId
+        reuseAdMap[adType.value] = config.reuseAd
 
-        if (reuseAd) {
+        if (config.reuseAd) {
             val reusableAd = findReusableAd(adType)
             if (reusableAd != null) {
                 Log.d(TAG_ADS, "${adType.value} -> loadInterstitialAd: Reusable ad available from ${reusableAd.first}, skipping load")
@@ -69,16 +73,13 @@ class InterstitialAdsConfig(
 
         startPreloading(
             adType = adType.value,
-            adUnitId = interAdId,
-            isRemoteEnable = isRemoteEnable,
-            bufferSize = bufferSize,
+            adUnitId = config.adUnitId,
+            isRemoteEnable = config.isRemoteEnable,
+            bufferSize = config.bufferSize,
             listener = listener
         )
     }
 
-    /**
-     *  Note: For counter ads, must do bufferSize = null.
-     */
     fun loadInterstitialAd(
         adType: InterAdKey,
         remoteCounter: Int,
@@ -90,17 +91,15 @@ class InterstitialAdsConfig(
             false -> counterMap.putIfAbsent(adType.value, 0)
         }
 
-        if (counterMap.containsKey(adType.value)) {
-            val counter = counterMap[adType.value] ?: 0
-            counterMap[adType.value] = counter + 1
-            counterMap[adType.value]?.let { currentCounter ->
-                Log.d(TAG_ADS, "${adType.value} -> loadInterstitial_Counter ----- Total Counter: $remoteCounter, Current Counter: $currentCounter")
-                if (currentCounter >= remoteCounter - 1) {
-                    counterMap[adType.value] = 0
-                    loadInterstitialAd(adType = adType, listener = listener)
-                    return
-                }
-            }
+        val currentCounter = counterMap[adType.value] ?: 0
+        counterMap[adType.value] = currentCounter + 1
+
+        Log.d(TAG_ADS, "${adType.value} -> loadInterstitial_Counter ----- Total Counter: $remoteCounter, Current Counter: ${currentCounter + 1}")
+
+        if (currentCounter + 1 >= remoteCounter) {
+            counterMap[adType.value] = 0
+            loadInterstitialAd(adType = adType, listener = listener)
+            return
         }
 
         listener?.onResponse(false)
@@ -168,7 +167,21 @@ class InterstitialAdsConfig(
         stopPreloading(adUnitId)
     }
 
+    fun clearAdData(adType: InterAdKey) {
+        val adUnitId = adUnitIdMap.remove(adType.value)
+        reuseAdMap.remove(adType.value)
+        counterMap.remove(adType.value)
+        adUnitId?.let { stopPreloading(it) }
+    }
+
     private fun getResString(@StringRes resId: Int): String {
         return resources.getString(resId)
     }
+
+    private data class AdConfig(
+        val adUnitId: String,
+        val isRemoteEnable: Boolean,
+        val bufferSize: Int?,
+        val reuseAd: Boolean
+    )
 }
