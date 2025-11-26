@@ -11,7 +11,7 @@ import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
-import dev.pegasus.nextgensdk.utils.constants.Constants
+import dev.pegasus.nextgensdk.utils.constants.Constants.TAG
 
 class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceBinding::inflate) {
 
@@ -24,25 +24,25 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
 
     private fun startTimeout() {
         Handler(Looper.getMainLooper()).postDelayed({
-            Log.d(Constants.TAG, "startTimeout: Starting timeout")
-            showAd()
+            Log.d(TAG, "startTimeout: Starting timeout")
+            onAdResponse("Ad Timeout")
         }, 2000)
     }
 
     private fun loadAd() {
         diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnLoadCallBack {
             override fun onResponse(successfullyLoaded: Boolean) {
-                onAdResponse(successfullyLoaded)
+                onAdResponse("Ad loaded: $successfullyLoaded")
             }
         })
     }
 
 
-    private fun onAdResponse(successfullyLoaded: Boolean) {
+    private fun onAdResponse(message: String) {
         if (isAdded.not()) return
         binding.cpiProgress.visibility = View.GONE
         binding.mbShowAd.isEnabled = true
-        binding.mtvTitle.text = "Ad loaded: $successfullyLoaded"
+        binding.mtvTitle.text = message
     }
 
     fun showAd() {

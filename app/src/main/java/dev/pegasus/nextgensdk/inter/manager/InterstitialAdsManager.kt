@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
-import com.google.android.libraries.ads.mobile.sdk.common.AdValue
 import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback
@@ -40,7 +39,8 @@ abstract class InterstitialAdsManager(
 
     private fun createPreloadConfig(adUnitId: String, bufferSize: Int? = null): PreloadConfiguration {
         val adRequest = AdRequest.Builder(adUnitId).build()
-        return PreloadConfiguration(adRequest, bufferSize)
+        val size = if (bufferSize == null || bufferSize < 0) 1 else bufferSize
+        return PreloadConfiguration(adRequest, size)
     }
 
     private fun isAdAvailable(adUnitId: String): Boolean {
@@ -225,11 +225,6 @@ abstract class InterstitialAdsManager(
                 super.onAdClicked()
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdClicked: called")
                 postToMain { listener?.onAdClicked() }
-            }
-
-            override fun onAdPaid(value: AdValue) {
-                super.onAdPaid(value)
-                Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdPaid: ${value.valueMicros} ${value.currencyCode}")
             }
         }
 

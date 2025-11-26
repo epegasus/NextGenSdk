@@ -12,7 +12,7 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
     override fun onViewCreated() {
         loadAds()
 
-        binding.mbContinue.setOnClickListener { navigateScreen() }
+        binding.mbContinue.setOnClickListener { checkInterstitialAd() }
     }
 
     private fun loadAds() {
