@@ -201,7 +201,7 @@ abstract class InterstitialAdsManager(
 
             override fun onAdImpression() {
                 super.onAdImpression()
-                Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdImpression: called")
+                Log.w(TAG_ADS, "$adType -> showPreloadedAd: onAdImpression: called")
                 adShownMap[adUnitId] = true
                 postToMain { listener?.onAdImpression() }
                 postToMainDelayed { listener?.onAdImpressionDelayed() }
