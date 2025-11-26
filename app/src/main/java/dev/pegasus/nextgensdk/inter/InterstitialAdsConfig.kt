@@ -58,6 +58,15 @@ class InterstitialAdsConfig(
         adUnitIdMap[adType.value] = interAdId
         reuseAdMap[adType.value] = reuseAd
 
+        if (reuseAd) {
+            val reusableAd = findReusableAd(adType)
+            if (reusableAd != null) {
+                Log.d(TAG_ADS, "${adType.value} -> loadInterstitialAd: Reusable ad available from ${reusableAd.first}, skipping load")
+                listener?.onResponse(true)
+                return
+            }
+        }
+
         startPreloading(
             adType = adType.value,
             adUnitId = interAdId,
@@ -67,6 +76,9 @@ class InterstitialAdsConfig(
         )
     }
 
+    /**
+     *  Note: For counter ads, must do bufferSize = null.
+     */
     fun loadInterstitialAd(
         adType: InterAdKey,
         remoteCounter: Int,
@@ -138,6 +150,15 @@ class InterstitialAdsConfig(
     }
 
     fun isInterstitialAdLoaded(adType: InterAdKey): Boolean {
+        val reuseAd = reuseAdMap[adType.value] == true
+
+        if (reuseAd) {
+            val reusableAd = findReusableAd(adType)
+            if (reusableAd != null) {
+                return true
+            }
+        }
+
         val adUnitId = adUnitIdMap[adType.value] ?: return false
         return isInterstitialAvailable(adUnitId)
     }
