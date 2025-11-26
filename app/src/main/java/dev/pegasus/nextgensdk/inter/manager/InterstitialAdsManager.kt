@@ -27,6 +27,7 @@ abstract class InterstitialAdsManager(
 
     private val preloadStatusMap = mutableMapOf<String, Boolean>()
     private val bufferSizeMap = mutableMapOf<String, Int?>()
+    private val adShownMap = mutableMapOf<String, Boolean>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private fun postToMain(action: () -> Unit) {
@@ -197,6 +198,7 @@ abstract class InterstitialAdsManager(
             override fun onAdImpression() {
                 super.onAdImpression()
                 Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdImpression: called")
+                adShownMap[adUnitId] = true
                 postToMain { listener?.onAdImpression() }
                 postToMainDelayed { listener?.onAdImpressionDelayed() }
                 if (bufferSizeMap[adUnitId] == null) {
@@ -256,5 +258,9 @@ abstract class InterstitialAdsManager(
 
     fun isPreloadActive(adUnitId: String): Boolean {
         return preloadStatusMap[adUnitId] == true
+    }
+
+    protected fun wasAdShown(adUnitId: String): Boolean {
+        return adShownMap[adUnitId] == true
     }
 }

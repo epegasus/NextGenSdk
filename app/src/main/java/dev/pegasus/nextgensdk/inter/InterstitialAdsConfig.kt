@@ -20,8 +20,8 @@ class InterstitialAdsConfig(
 ) : InterstitialAdsManager(sharedPreferencesDataSource, internetManager) {
 
     private val counterMap by lazy { HashMap<String, Int>() }
-
     private val adUnitIdMap = mutableMapOf<String, String>()
+    private val reuseAdMap = mutableMapOf<String, Boolean>()
 
     fun loadInterstitialAd(
         adType: InterAdKey,
@@ -56,6 +56,7 @@ class InterstitialAdsConfig(
         }
 
         adUnitIdMap[adType.value] = interAdId
+        reuseAdMap[adType.value] = reuseAd
 
         startPreloading(
             adType = adType.value,
@@ -94,6 +95,22 @@ class InterstitialAdsConfig(
     }
 
     fun showInterstitialAd(activity: Activity?, adType: InterAdKey, listener: InterstitialOnShowCallBack? = null) {
+        val reuseAd = reuseAdMap[adType.value] == true
+
+        if (reuseAd) {
+            val reusableAd = findReusableAd(adType)
+            if (reusableAd != null) {
+                Log.d(TAG_ADS, "${adType.value} -> showInterstitialAd: Reusing available ad from ${reusableAd.first}")
+                showPreloadedAd(
+                    activity = activity,
+                    adType = reusableAd.first,
+                    adUnitId = reusableAd.second,
+                    listener = listener
+                )
+                return
+            }
+        }
+
         val adUnitId = adUnitIdMap[adType.value] ?: run {
             Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found. Make sure to load ad first.")
             listener?.onAdFailedToShow()
@@ -106,6 +123,18 @@ class InterstitialAdsConfig(
             adUnitId = adUnitId,
             listener = listener
         )
+    }
+
+    private fun findReusableAd(requestedAdType: InterAdKey): Pair<String, String>? {
+        for ((adTypeValue, adUnitId) in adUnitIdMap) {
+            if (adTypeValue == requestedAdType.value) continue
+            if (reuseAdMap[adTypeValue] != true) continue
+            if (wasAdShown(adUnitId)) continue
+            if (isInterstitialAvailable(adUnitId)) {
+                return Pair(adTypeValue, adUnitId)
+            }
+        }
+        return null
     }
 
     fun isInterstitialAdLoaded(adType: InterAdKey): Boolean {
