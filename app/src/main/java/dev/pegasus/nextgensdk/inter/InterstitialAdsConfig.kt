@@ -31,7 +31,7 @@ class InterstitialAdsConfig(
                 adUnitId = getResString(R.string.admob_inter_entrance_id),
                 isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0,
                 bufferSize = null,
-                canShare = false,
+                canShare = true,
                 canReuse = false
             )
 
@@ -56,7 +56,7 @@ class InterstitialAdsConfig(
                 isRemoteEnable = sharedPreferencesDataSource.rcInterBottomNavigation != 1,
                 bufferSize = 1,
                 canShare = false,
-                canReuse = false
+                canReuse = true
             )
 
             InterAdKey.BACK_PRESS -> AdConfig(
@@ -100,16 +100,23 @@ class InterstitialAdsConfig(
             }
         }
 
-        adUnitIdMap[adType.value] = config.adUnitId
-        canReuseMap[adType.value] = config.canReuse
-        canShareMap[adType.value] = config.canShare
-
+        // Only add to map when ad successfully loads (use wrapper listener)
         startPreloading(
             adType = adType.value,
             adUnitId = config.adUnitId,
             isRemoteEnable = config.isRemoteEnable,
             bufferSize = config.bufferSize,
-            listener = listener
+            listener = object : InterstitialOnLoadCallBack {
+                override fun onResponse(successfullyLoaded: Boolean) {
+                    if (successfullyLoaded) {
+                        // Only add to map on successful load
+                        adUnitIdMap[adType.value] = config.adUnitId
+                        canReuseMap[adType.value] = config.canReuse
+                        canShareMap[adType.value] = config.canShare
+                    }
+                    listener?.onResponse(successfullyLoaded)
+                }
+            }
         )
     }
 
@@ -164,18 +171,38 @@ class InterstitialAdsConfig(
         }
 
         // When canReuse = false, we must ensure:
-        // 1. Ad was loaded (adUnitId is not null)
-        // 2. AdUnitId matches the expected adUnitId from config (prevents showing wrong ad)
-        val adUnitId = requestedAdUnitId ?: run {
-            Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found. Make sure to load ad first.")
-            listener?.onAdFailedToShow()
+        // 1. Ad was loaded for THIS specific adType (check if adType exists in map)
+        // 2. Validate based on InterAdKey, not adUnitId (works in debug with same test IDs)
+        if (!canReuse) {
+            // Check if ad was loaded for this specific adType
+            if (!adUnitIdMap.containsKey(adType.value)) {
+                Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad not loaded for this screen. canReuse=false, so cannot use other ads.")
+                listener?.onAdFailedToShow()
+                return
+            }
+            
+            // Additional validation: Ensure the adUnitId in map corresponds to this adType's expected adUnitId
+            // This works even in debug mode because we're checking the map key (adType), not just adUnitId
+            val adUnitId = adUnitIdMap[adType.value]
+            if (adUnitId == null) {
+                Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found in map for this screen.")
+                listener?.onAdFailedToShow()
+                return
+            }
+            
+            // Show the ad that was loaded for this specific screen
+            showPreloadedAd(
+                activity = activity,
+                adType = adType.value,
+                adUnitId = adUnitId,
+                listener = listener
+            )
             return
         }
 
-        // Validate that the adUnitId matches the expected one for this ad type
-        // This prevents showing wrong ad when canReuse = false
-        if (!canReuse && adUnitId != config.adUnitId) {
-            Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID mismatch. Expected: ${config.adUnitId}, Found: $adUnitId. Ad not loaded for this screen.")
+        // When canReuse = true but no reusable ad found, use own ad if available
+        val adUnitId = requestedAdUnitId ?: run {
+            Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found. Make sure to load ad first.")
             listener?.onAdFailedToShow()
             return
         }
