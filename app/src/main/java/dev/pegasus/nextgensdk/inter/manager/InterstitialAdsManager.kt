@@ -124,7 +124,7 @@ abstract class InterstitialAdsManager(
             }
 
             override fun onAdsExhausted(preloadId: String) {
-                Log.d(TAG_ADS, "$adType -> startPreloading: onAdsExhausted: preloadId: $preloadId")
+                //Log.d(TAG_ADS, "$adType -> startPreloading: onAdsExhausted: preloadId: $preloadId")
             }
         }
 
@@ -182,20 +182,19 @@ abstract class InterstitialAdsManager(
             return
         }
 
-        Log.d(TAG_ADS, "$adType -> showPreloadedAd: showing ad")
-
         val ad: InterstitialAd? = pollAd(adUnitId)
-
         if (ad == null) {
             Log.e(TAG_ADS, "$adType -> showPreloadedAd: Failed to poll ad")
             listener?.onAdFailedToShow()
             return
         }
 
+        Log.d(TAG_ADS, "$adType -> showPreloadedAd: showing ad")
+
         ad.adEventCallback = object : InterstitialAdEventCallback {
             override fun onAdShowedFullScreenContent() {
                 super.onAdShowedFullScreenContent()
-                Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdShowedFullScreenContent: called")
+                //Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdShowedFullScreenContent: called")
                 postToMain { listener?.onAdShowedFullScreenContent() }
             }
 
@@ -233,7 +232,7 @@ abstract class InterstitialAdsManager(
 
             override fun onAdPaid(value: AdValue) {
                 super.onAdPaid(value)
-                Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdPaid: ${value.valueMicros} ${value.currencyCode}")
+                //Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdPaid: ${value.valueMicros} ${value.currencyCode}")
             }
         }
 

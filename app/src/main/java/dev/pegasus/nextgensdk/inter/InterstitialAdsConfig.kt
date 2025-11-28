@@ -32,28 +32,28 @@ class InterstitialAdsConfig(
                 isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0,
                 bufferSize = null,
                 canShare = true,
-                canReuse = false
+                canReuse = true
             )
 
             InterAdKey.ON_BOARDING -> AdConfig(
                 adUnitId = getResString(R.string.admob_inter_on_boarding_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterOnBoarding != 1,
+                isRemoteEnable = sharedPreferencesDataSource.rcInterOnBoarding != 0,
                 bufferSize = null,
-                canShare = false,
-                canReuse = false
+                canShare = true,
+                canReuse = true
             )
 
             InterAdKey.DASHBOARD -> AdConfig(
                 adUnitId = getResString(R.string.admob_inter_dashboard_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 1,
+                isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0,
                 bufferSize = 1,
                 canShare = false,
-                canReuse = false
+                canReuse = true
             )
 
             InterAdKey.BOTTOM_NAVIGATION -> AdConfig(
                 adUnitId = getResString(R.string.admob_inter_bottom_navigation_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterBottomNavigation != 1,
+                isRemoteEnable = sharedPreferencesDataSource.rcInterBottomNavigation != 0,
                 bufferSize = 1,
                 canShare = false,
                 canReuse = true
@@ -61,18 +61,18 @@ class InterstitialAdsConfig(
 
             InterAdKey.BACK_PRESS -> AdConfig(
                 adUnitId = getResString(R.string.admob_inter_back_press_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterBackpress != 1,
+                isRemoteEnable = sharedPreferencesDataSource.rcInterBackpress != 0,
                 bufferSize = 1,
-                canShare = false,
-                canReuse = false
+                canShare = true,
+                canReuse = true
             )
 
             InterAdKey.EXIT -> AdConfig(
                 adUnitId = getResString(R.string.admob_inter_exit_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterExit != 1,
+                isRemoteEnable = sharedPreferencesDataSource.rcInterExit != 0,
                 bufferSize = null,
                 canShare = false,
-                canReuse = false
+                canReuse = true
             )
         }
     }
