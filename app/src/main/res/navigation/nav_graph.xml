@@ -68,12 +68,12 @@
         tools:layout="@layout/fragment_exit" />
     <fragment
         android:id="@+id/featureOneFragment"
-        android:name="dev.pegasus.nextgensdk.FeatureOneFragment"
+        android:name="dev.pegasus.nextgensdk.ui.fragments.FeatureOneFragment"
         android:label="fragment_feature_one"
         tools:layout="@layout/fragment_feature_one" />
     <fragment
         android:id="@+id/featureTwoFragment"
-        android:name="dev.pegasus.nextgensdk.FeatureTwoFragment"
+        android:name="dev.pegasus.nextgensdk.ui.fragments.FeatureTwoFragment"
         android:label="fragment_feature_two"
         tools:layout="@layout/fragment_feature_two" />
 

@@ -1,12 +1,12 @@
-package dev.pegasus.nextgensdk
+package dev.pegasus.nextgensdk.ui.fragments
 
 import androidx.navigation.fragment.findNavController
-import dev.pegasus.nextgensdk.databinding.FragmentFeatureOneBinding
+import dev.pegasus.nextgensdk.databinding.FragmentFeatureTwoBinding
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
-class FeatureOneFragment : BaseFragment<FragmentFeatureOneBinding>(FragmentFeatureOneBinding::inflate) {
+class FeatureTwoFragment : BaseFragment<FragmentFeatureTwoBinding>(FragmentFeatureTwoBinding::inflate) {
 
     override fun onViewCreated() {
         loadAd()
