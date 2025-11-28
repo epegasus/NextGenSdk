@@ -129,7 +129,13 @@ class InterstitialAdsConfig(
     }
 
     fun showInterstitialAd(activity: Activity?, adType: InterAdKey, listener: InterstitialOnShowCallBack? = null) {
-        val reuseAd = reuseAdMap[adType.value] == true
+        val config = getAdConfig(adType) ?: run {
+            Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Unknown ad type")
+            listener?.onAdFailedToShow()
+            return
+        }
+        
+        val reuseAd = config.reuseAd
         val requestedAdUnitId = adUnitIdMap[adType.value]
 
         if (reuseAd) {
