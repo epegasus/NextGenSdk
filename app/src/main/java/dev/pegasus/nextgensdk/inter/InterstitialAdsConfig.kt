@@ -20,61 +20,65 @@ class InterstitialAdsConfig(
     internetManager: InternetManager
 ) : InterstitialAdsManager(sharedPreferencesDataSource, internetManager) {
 
-    private val counterMap = ConcurrentHashMap<String, Int>()
-    private val adUnitIdMap = ConcurrentHashMap<String, String>()
-    private val canReuseMap = ConcurrentHashMap<String, Boolean>()
-    private val canShareMap = ConcurrentHashMap<String, Boolean>()
+    // Primary maps using InterAdKey as key
+    private val adInfoMap = ConcurrentHashMap<InterAdKey, AdInfo>()
+    private val counterMap = ConcurrentHashMap<InterAdKey, Int>()
+
+    // Configuration data - maps InterAdKey to its config
+    private val adConfigMap = mapOf(
+        InterAdKey.ENTRANCE to AdConfigData(
+            resId = R.string.admob_inter_entrance_id,
+            remoteConfigKey = { sharedPreferencesDataSource.rcInterEntrance != 0 },
+            bufferSize = null,
+            canShare = true,
+            canReuse = true
+        ),
+        InterAdKey.ON_BOARDING to AdConfigData(
+            resId = R.string.admob_inter_on_boarding_id,
+            remoteConfigKey = { sharedPreferencesDataSource.rcInterOnBoarding != 0 },
+            bufferSize = null,
+            canShare = true,
+            canReuse = true
+        ),
+        InterAdKey.DASHBOARD to AdConfigData(
+            resId = R.string.admob_inter_dashboard_id,
+            remoteConfigKey = { sharedPreferencesDataSource.rcInterDashboard != 0 },
+            bufferSize = 1,
+            canShare = false,
+            canReuse = true
+        ),
+        InterAdKey.BOTTOM_NAVIGATION to AdConfigData(
+            resId = R.string.admob_inter_bottom_navigation_id,
+            remoteConfigKey = { sharedPreferencesDataSource.rcInterBottomNavigation != 0 },
+            bufferSize = 1,
+            canShare = false,
+            canReuse = true
+        ),
+        InterAdKey.BACK_PRESS to AdConfigData(
+            resId = R.string.admob_inter_back_press_id,
+            remoteConfigKey = { sharedPreferencesDataSource.rcInterBackpress != 0 },
+            bufferSize = 1,
+            canShare = true,
+            canReuse = true
+        ),
+        InterAdKey.EXIT to AdConfigData(
+            resId = R.string.admob_inter_exit_id,
+            remoteConfigKey = { sharedPreferencesDataSource.rcInterExit != 0 },
+            bufferSize = null,
+            canShare = false,
+            canReuse = true
+        )
+    )
 
     private fun getAdConfig(adType: InterAdKey): AdConfig? {
-        return when (adType) {
-            InterAdKey.ENTRANCE -> AdConfig(
-                adUnitId = getResString(R.string.admob_inter_entrance_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterEntrance != 0,
-                bufferSize = null,
-                canShare = true,
-                canReuse = true
-            )
-
-            InterAdKey.ON_BOARDING -> AdConfig(
-                adUnitId = getResString(R.string.admob_inter_on_boarding_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterOnBoarding != 0,
-                bufferSize = null,
-                canShare = true,
-                canReuse = true
-            )
-
-            InterAdKey.DASHBOARD -> AdConfig(
-                adUnitId = getResString(R.string.admob_inter_dashboard_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0,
-                bufferSize = 1,
-                canShare = false,
-                canReuse = true
-            )
-
-            InterAdKey.BOTTOM_NAVIGATION -> AdConfig(
-                adUnitId = getResString(R.string.admob_inter_bottom_navigation_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterBottomNavigation != 0,
-                bufferSize = 1,
-                canShare = false,
-                canReuse = true
-            )
-
-            InterAdKey.BACK_PRESS -> AdConfig(
-                adUnitId = getResString(R.string.admob_inter_back_press_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterBackpress != 0,
-                bufferSize = 1,
-                canShare = true,
-                canReuse = true
-            )
-
-            InterAdKey.EXIT -> AdConfig(
-                adUnitId = getResString(R.string.admob_inter_exit_id),
-                isRemoteEnable = sharedPreferencesDataSource.rcInterExit != 0,
-                bufferSize = null,
-                canShare = false,
-                canReuse = true
-            )
-        }
+        val configData = adConfigMap[adType] ?: return null
+        return AdConfig(
+            adUnitId = getResString(configData.resId),
+            isRemoteEnable = configData.remoteConfigKey(),
+            bufferSize = configData.bufferSize,
+            canShare = configData.canShare,
+            canReuse = configData.canReuse
+        )
     }
 
     fun loadInterstitialAd(
@@ -82,41 +86,38 @@ class InterstitialAdsConfig(
         listener: InterstitialOnLoadCallBack? = null
     ) {
         val config = getAdConfig(adType) ?: run {
-            Log.e(TAG_ADS, "${adType.value} -> loadInterstitialAd: Unknown ad type")
+            logError(adType.value, "loadInterstitialAd", "Unknown ad type")
             listener?.onResponse(false)
             return
         }
 
-        // If this screen can reuse others' ads, check for available reusable ads
+        // Try to reuse existing ad if allowed
         if (config.canReuse) {
-            val reusableAd = findReusableAd(adType, config.adUnitId)
-            if (reusableAd != null) {
-                Log.d(TAG_ADS, "${adType.value} -> loadInterstitialAd: Reusable ad available from ${reusableAd.first}, skipping load")
-                adUnitIdMap[adType.value] = reusableAd.second
-                canReuseMap[adType.value] = config.canReuse
-                canShareMap[adType.value] = config.canShare
-                listener?.onResponse(true)
-                return
+            findReusableAd(adType, config.adUnitId)?.let { reusableAdType ->
+                adInfoMap[reusableAdType]?.let { reusableInfo ->
+                    logDebug(adType.value, "loadInterstitialAd", "Reusing available ad from ${reusableAdType.value}")
+                    adInfoMap[adType] = reusableInfo.copy(canShare = config.canShare, canReuse = config.canReuse, bufferSize = config.bufferSize)
+                    listener?.onResponse(true)
+                    return
+                }
             }
         }
 
-        // Only add to map when ad successfully loads (use wrapper listener)
-        startPreloading(
+        // Stop existing preload if bufferSize=null and not shown
+        if (config.bufferSize == null && isPreloadActive(config.adUnitId)) {
+            findAdTypeByAdUnitId(config.adUnitId)?.takeIf { !wasAdShown(config.adUnitId) }?.let {
+                logDebug(adType.value, "loadInterstitialAd", "Stopping existing preload for ${it.value} (bufferSize=null, not shown)")
+                stopPreloading(it)
+            }
+        }
+
+        // Load new ad
+        loadInterstitialAd(
             adType = adType.value,
             adUnitId = config.adUnitId,
             isRemoteEnable = config.isRemoteEnable,
             bufferSize = config.bufferSize,
-            listener = object : InterstitialOnLoadCallBack {
-                override fun onResponse(successfullyLoaded: Boolean) {
-                    if (successfullyLoaded) {
-                        // Only add to map on successful load
-                        adUnitIdMap[adType.value] = config.adUnitId
-                        canReuseMap[adType.value] = config.canReuse
-                        canShareMap[adType.value] = config.canShare
-                    }
-                    listener?.onResponse(successfullyLoaded)
-                }
-            }
+            listener = createLoadListener(adType, config, listener)
         )
     }
 
@@ -126,164 +127,161 @@ class InterstitialAdsConfig(
         loadOnStart: Boolean,
         listener: InterstitialOnLoadCallBack? = null
     ) {
-        when (loadOnStart) {
-            true -> counterMap.putIfAbsent(adType.value, remoteCounter - 1)
-            false -> counterMap.putIfAbsent(adType.value, 0)
+        counterMap.putIfAbsent(adType, if (loadOnStart) remoteCounter - 1 else 0)
+        val currentCounter = counterMap[adType]!! + 1
+        counterMap[adType] = currentCounter
+
+        Log.d(TAG_ADS, "${adType.value} -> loadInterstitial_Counter ----- Total Counter: $remoteCounter, Current Counter: $currentCounter")
+
+        if (currentCounter >= remoteCounter) {
+            counterMap[adType] = 0
+            loadInterstitialAd(adType, listener)
+        } else {
+            listener?.onResponse(false)
         }
-
-        val currentCounter = counterMap[adType.value] ?: 0
-        counterMap[adType.value] = currentCounter + 1
-
-        Log.d(TAG_ADS, "${adType.value} -> loadInterstitial_Counter ----- Total Counter: $remoteCounter, Current Counter: ${currentCounter + 1}")
-
-        if (currentCounter + 1 >= remoteCounter) {
-            counterMap[adType.value] = 0
-            loadInterstitialAd(adType = adType, listener = listener)
-            return
-        }
-
-        listener?.onResponse(false)
     }
 
     fun showInterstitialAd(activity: Activity?, adType: InterAdKey, listener: InterstitialOnShowCallBack? = null) {
         val config = getAdConfig(adType) ?: run {
-            Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Unknown ad type")
-            listener?.onAdFailedToShow()
-            return
-        }
-        
-        val canReuse = config.canReuse
-        val requestedAdUnitId = adUnitIdMap[adType.value]
-
-        // If this screen can reuse others' ads, check for available reusable ads
-        if (canReuse) {
-            val reusableAd = findReusableAd(adType, requestedAdUnitId)
-            if (reusableAd != null) {
-                Log.d(TAG_ADS, "${adType.value} -> showInterstitialAd: Reusing available ad from ${reusableAd.first}")
-                showPreloadedAd(
-                    activity = activity,
-                    adType = reusableAd.first,
-                    adUnitId = reusableAd.second,
-                    listener = listener
-                )
-                return
-            }
-        }
-
-        // When canReuse = false, we must ensure:
-        // 1. Ad was loaded for THIS specific adType (check if adType exists in map)
-        // 2. Validate based on InterAdKey, not adUnitId (works in debug with same test IDs)
-        if (!canReuse) {
-            // Check if ad was loaded for this specific adType
-            if (!adUnitIdMap.containsKey(adType.value)) {
-                Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad not loaded for this screen. canReuse=false, so cannot use other ads.")
-                listener?.onAdFailedToShow()
-                return
-            }
-            
-            // Additional validation: Ensure the adUnitId in map corresponds to this adType's expected adUnitId
-            // This works even in debug mode because we're checking the map key (adType), not just adUnitId
-            val adUnitId = adUnitIdMap[adType.value]
-            if (adUnitId == null) {
-                Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found in map for this screen.")
-                listener?.onAdFailedToShow()
-                return
-            }
-            
-            // Show the ad that was loaded for this specific screen
-            showPreloadedAd(
-                activity = activity,
-                adType = adType.value,
-                adUnitId = adUnitId,
-                listener = listener
-            )
-            return
-        }
-
-        // When canReuse = true but no reusable ad found, use own ad if available
-        val adUnitId = requestedAdUnitId ?: run {
-            Log.e(TAG_ADS, "${adType.value} -> showInterstitialAd: Ad unit ID not found. Make sure to load ad first.")
+            logError(adType.value, "showInterstitialAd", "Unknown ad type")
             listener?.onAdFailedToShow()
             return
         }
 
-        showPreloadedAd(
-            activity = activity,
-            adType = adType.value,
-            adUnitId = adUnitId,
-            listener = listener
-        )
+        val adInfo = adInfoMap[adType]
+
+        // Try to reuse if allowed
+        if (config.canReuse) {
+            findReusableAd(adType, adInfo?.adUnitId)?.let { reusableAdType ->
+                adInfoMap[reusableAdType]?.let { reusableInfo ->
+                    logDebug(adType.value, "showInterstitialAd", "Reusing available ad from ${reusableAdType.value}")
+                    showInterstitialAd(activity, reusableAdType.value, reusableInfo.adUnitId, listener)
+                    return
+                }
+            }
+        }
+
+        // Validate and show own ad
+        when {
+            !config.canReuse && adInfo == null -> {
+                logError(adType.value, "showInterstitialAd", "Ad not loaded for this screen. canReuse=false, so cannot use other ads.")
+                listener?.onAdFailedToShow()
+            }
+            adInfo == null -> {
+                logError(adType.value, "showInterstitialAd", "Ad unit ID not found. Make sure to load ad first.")
+                listener?.onAdFailedToShow()
+            }
+            else -> showInterstitialAd(activity, adType.value, adInfo.adUnitId, listener)
+        }
     }
 
-    private fun findReusableAd(requestedAdType: InterAdKey, requestedAdUnitId: String? = null): Pair<String, String>? {
-        // First, try to find ad with same adUnitId (priority match)
-        if (requestedAdUnitId != null) {
-            for ((adTypeValue, adUnitId) in adUnitIdMap) {
-                if (adTypeValue == requestedAdType.value) continue
-                if (adUnitId == requestedAdUnitId && isInterstitialAvailable(adUnitId) && !wasAdShown(adUnitId)) {
-                    // Check if the source ad type allows sharing (canShare = true)
-                    if (canShareMap[adTypeValue] == true) {
-                        Log.d(TAG_ADS, "${requestedAdType.value} -> findReusableAd: Found same ad unit ID from $adTypeValue")
-                        return Pair(adTypeValue, adUnitId)
-                    }
-                }
+    private fun findAdTypeByAdUnitId(adUnitId: String): InterAdKey? {
+        return adInfoMap.entries.firstOrNull { it.value.adUnitId == adUnitId }?.key
+    }
+
+    private fun findReusableAd(requestedAdType: InterAdKey, requestedAdUnitId: String?): InterAdKey? {
+        // Helper to check if ad is reusable
+        fun isReusable(adType: InterAdKey, info: AdInfo): Boolean {
+            return adType != requestedAdType
+                && !wasAdShown(info.adUnitId)
+                && isInterstitialAvailable(info.adUnitId)
+                && isPreloadActive(info.adUnitId)
+                && info.canShare
+        }
+
+        // Priority: same adUnitId match
+        requestedAdUnitId?.let { targetId ->
+            adInfoMap.entries.firstOrNull { (type, info) ->
+                type != requestedAdType && info.adUnitId == targetId && isReusable(type, info)
+            }?.let {
+                logDebug(requestedAdType.value, "findReusableAd", "Found same ad unit ID from ${it.key.value}")
+                return it.key
             }
         }
 
-        // Then, find any available ad that can be shared
-        for ((adTypeValue, adUnitId) in adUnitIdMap) {
-            if (adTypeValue == requestedAdType.value) continue
-            if (wasAdShown(adUnitId)) continue
-            if (isInterstitialAvailable(adUnitId)) {
-                // Check if the source ad type allows sharing (canShare = true)
-                if (canShareMap[adTypeValue] == true) {
-                    return Pair(adTypeValue, adUnitId)
-                }
-            }
-        }
-
-        return null
+        // Fallback: any shareable ad
+        return adInfoMap.entries.firstOrNull { (type, info) -> isReusable(type, info) }?.key
     }
 
     fun isInterstitialAdLoaded(adType: InterAdKey): Boolean {
         val config = getAdConfig(adType) ?: return false
-        val canReuse = config.canReuse
-        val requestedAdUnitId = adUnitIdMap[adType.value]
+        val adInfo = adInfoMap[adType]
 
-        // If this screen can reuse others' ads, check for available reusable ads
-        if (canReuse) {
-            val reusableAd = findReusableAd(adType, requestedAdUnitId)
-            if (reusableAd != null) {
-                return true
-            }
+        return if (config.canReuse) {
+            findReusableAd(adType, adInfo?.adUnitId) != null
+        } else {
+            adInfo != null && isInterstitialAvailable(adInfo.adUnitId)
         }
-
-        val adUnitId = requestedAdUnitId ?: return false
-        return isInterstitialAvailable(adUnitId)
     }
 
     fun stopPreloading(adType: InterAdKey) {
-        val adUnitId = adUnitIdMap[adType.value] ?: return
-        stopPreloading(adUnitId)
+        adInfoMap[adType]?.adUnitId?.let { stopPreloading(it) }
+    }
+
+    override fun stopPreloading(adUnitId: String) {
+        // Find and remove all adTypes using this adUnitId
+        adInfoMap.keys.filter { adInfoMap[it]?.adUnitId == adUnitId }.forEach {
+            adInfoMap.remove(it)
+            counterMap.remove(it)
+        }
+        super.stopPreloading(adUnitId)
     }
 
     fun clearAdData(adType: InterAdKey) {
-        val adUnitId = adUnitIdMap.remove(adType.value)
-        canReuseMap.remove(adType.value)
-        canShareMap.remove(adType.value)
-        counterMap.remove(adType.value)
-        adUnitId?.let { stopPreloading(it) }
+        adInfoMap.remove(adType)?.adUnitId?.let { stopPreloading(it) }
+        counterMap.remove(adType)
     }
 
-    private fun getResString(@StringRes resId: Int): String {
-        return resources.getString(resId)
+    // Helper functions
+    private fun getResString(@StringRes resId: Int) = resources.getString(resId)
+    
+    private fun logError(adType: String, method: String, message: String) {
+        Log.e(TAG_ADS, "$adType -> $method: $message")
     }
+    
+    private fun logDebug(adType: String, method: String, message: String) {
+        Log.d(TAG_ADS, "$adType -> $method: $message")
+    }
+
+    private fun createLoadListener(
+        adType: InterAdKey,
+        config: AdConfig,
+        originalListener: InterstitialOnLoadCallBack?
+    ) = object : InterstitialOnLoadCallBack {
+        override fun onResponse(successfullyLoaded: Boolean) {
+            if (successfullyLoaded) {
+                adInfoMap[adType] = AdInfo(
+                    adUnitId = config.adUnitId,
+                    canShare = config.canShare,
+                    canReuse = config.canReuse,
+                    bufferSize = config.bufferSize
+                )
+            }
+            originalListener?.onResponse(successfullyLoaded)
+        }
+    }
+
+    // Data classes
+    private data class AdConfigData(
+        @StringRes val resId: Int,
+        val remoteConfigKey: () -> Boolean,
+        val bufferSize: Int?,
+        val canShare: Boolean,
+        val canReuse: Boolean
+    )
 
     private data class AdConfig(
         val adUnitId: String,
         val isRemoteEnable: Boolean,
         val bufferSize: Int?,
-        val canShare: Boolean,  // Can this ad be shared with other screens? (outgoing)
-        val canReuse: Boolean   // Can this screen reuse ads from other screens? (incoming)
+        val canShare: Boolean,
+        val canReuse: Boolean
+    )
+
+    private data class AdInfo(
+        val adUnitId: String,
+        val canShare: Boolean,
+        val canReuse: Boolean,
+        val bufferSize: Int?
     )
 }

@@ -31,247 +31,256 @@ abstract class InterstitialAdsManager(
     private val adShownMap = ConcurrentHashMap<String, Boolean>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    private fun postToMain(action: () -> Unit) {
-        mainHandler.post(action)
-    }
-
-    private fun postToMainDelayed(delayMillis: Long = 300, action: () -> Unit) {
-        mainHandler.postDelayed(action, delayMillis)
-    }
-
-    private fun createPreloadConfig(adUnitId: String, bufferSize: Int? = null): PreloadConfiguration {
-        val adRequest = AdRequest.Builder(adUnitId).build()
-        val size = if (bufferSize == null || bufferSize < 0) 1 else bufferSize
-        return PreloadConfiguration(adRequest, size)
-    }
-
-    private fun isAdAvailable(adUnitId: String): Boolean {
-        return InterstitialAdPreloader.isAdAvailable(adUnitId)
-    }
-
-    private fun pollAd(adUnitId: String): InterstitialAd? {
-        return InterstitialAdPreloader.pollAd(adUnitId)
-    }
-
-    private fun destroyPreload(adUnitId: String) {
-        InterstitialAdPreloader.destroy(adUnitId)
-    }
-
-    protected fun startPreloading(
+    protected fun loadInterstitialAd(
         adType: String,
         adUnitId: String,
         isRemoteEnable: Boolean,
         bufferSize: Int?,
         listener: InterstitialOnLoadCallBack? = null
     ) {
-        if (!isRemoteEnable) {
-            Log.e(TAG_ADS, "$adType -> startPreloading: Remote config is off")
-            listener?.onResponse(false)
-            return
+        // Validation checks
+        when {
+            !isRemoteEnable -> {
+                logError(adType, "loadInterstitialAd", "Remote config is off")
+                listener?.onResponse(false)
+                return
+            }
+            sharedPreferencesDataSource.isAppPurchased -> {
+                logError(adType, "loadInterstitialAd", "Premium user")
+                listener?.onResponse(false)
+                return
+            }
+            adUnitId.trim().isEmpty() -> {
+                logError(adType, "loadInterstitialAd", "Ad id is empty")
+                listener?.onResponse(false)
+                return
+            }
+            !internetManager.isInternetConnected -> {
+                logError(adType, "loadInterstitialAd", "Internet is not connected")
+                listener?.onResponse(false)
+                return
+            }
         }
 
-        if (sharedPreferencesDataSource.isAppPurchased) {
-            Log.e(TAG_ADS, "$adType -> startPreloading: Premium user")
-            listener?.onResponse(false)
-            return
-        }
+        bufferSize?.let { bufferSizeMap[adUnitId] = it }
 
-        if (adUnitId.trim().isEmpty()) {
-            Log.e(TAG_ADS, "$adType -> startPreloading: Ad id is empty")
-            listener?.onResponse(false)
-            return
-        }
-
-        if (!internetManager.isInternetConnected) {
-            Log.e(TAG_ADS, "$adType -> startPreloading: Internet is not connected")
-            listener?.onResponse(false)
-            return
-        }
-
-        if (bufferSize != null) {
-            bufferSizeMap[adUnitId] = bufferSize
-        }
-
-        if (preloadStatusMap[adUnitId] == true) {
-            Log.i(TAG_ADS, "$adType -> startPreloading: Preload already started for ad unit: $adUnitId")
-            listener?.onResponse(isAdAvailable(adUnitId))
-            return
-        }
-
-        if (isAdAvailable(adUnitId)) {
-            Log.i(TAG_ADS, "$adType -> startPreloading: Ad already available")
-            preloadStatusMap[adUnitId] = true
-            listener?.onResponse(true)
-            return
-        }
-
-        Log.d(TAG_ADS, "$adType -> startPreloading: Requesting admob server for ad...")
-
-        val preloadCallback = object : PreloadCallback {
-            override fun onAdPreloaded(preloadId: String, responseInfo: ResponseInfo) {
-                Log.i(TAG_ADS, "$adType -> startPreloading: onAdPreloaded: preloadId: $preloadId")
+        // Check if already loading or available
+        when {
+            preloadStatusMap[adUnitId] == true -> {
+                logDebug(adType, "loadInterstitialAd", "Ad is already loading for this ad unit: $adUnitId")
+                listener?.onResponse(isAdAvailable(adUnitId))
+                return
+            }
+            isAdAvailable(adUnitId) -> {
+                logInfo(adType, "loadInterstitialAd", "Ad already available")
                 preloadStatusMap[adUnitId] = true
-                postToMain { listener?.onResponse(true) }
-            }
-
-            override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
-                Log.e(TAG_ADS, "$adType -> startPreloading: onAdFailedToPreload: preloadId: $preloadId, adMessage: ${adError.message}")
-                preloadStatusMap[adUnitId] = false
-                if (!bufferSizeMap.containsKey(adUnitId)) {
-                    stopPreloading(adUnitId)
-                }
-                postToMain { listener?.onResponse(false) }
-            }
-
-            override fun onAdsExhausted(preloadId: String) {
-                //Log.d(TAG_ADS, "$adType -> startPreloading: onAdsExhausted: preloadId: $preloadId")
+                listener?.onResponse(true)
+                return
             }
         }
+
+        logDebug(adType, "loadInterstitialAd", "Requesting admob server for ad...")
 
         try {
             val preloadConfig = createPreloadConfig(adUnitId, bufferSize)
-            val isIdInUse = InterstitialAdPreloader.start(adUnitId, preloadConfig, preloadCallback)
+            val isIdInUse = InterstitialAdPreloader.start(adUnitId, preloadConfig, createPreloadCallback(adType, adUnitId, bufferSize, listener))
 
             if (!isIdInUse) {
-                Log.d(TAG_ADS, "$adType -> startPreloading: Preload ID is already in use")
+                logDebug(adType, "loadInterstitialAd", "AdUnitId is already in use")
                 preloadStatusMap[adUnitId] = true
                 listener?.onResponse(isAdAvailable(adUnitId))
             } else {
                 preloadStatusMap[adUnitId] = true
             }
         } catch (e: Exception) {
-            Log.e(TAG_ADS, "$adType -> startPreloading: Exception: ${e.message}", e)
+            logError(adType, "loadInterstitialAd", "Exception: ${e.message}")
             preloadStatusMap[adUnitId] = false
             listener?.onResponse(false)
         }
     }
 
-    protected fun showPreloadedAd(
+    protected fun showInterstitialAd(
         activity: Activity?,
         adType: String,
         adUnitId: String,
         listener: InterstitialOnShowCallBack?
     ) {
-        if (sharedPreferencesDataSource.isAppPurchased) {
-            Log.e(TAG_ADS, "$adType -> showPreloadedAd: Premium user")
+        // Validation checks
+        when {
+            sharedPreferencesDataSource.isAppPurchased -> {
+                logError(adType, "showInterstitialAd", "Premium user")
+                listener?.onAdFailedToShow()
+                return
+            }
+            !isAdAvailable(adUnitId) -> {
+                logError(adType, "showInterstitialAd", "Interstitial is not available yet")
+                listener?.onAdFailedToShow()
+                return
+            }
+            activity == null -> {
+                logError(adType, "showInterstitialAd", "activity reference is null")
+                listener?.onAdFailedToShow()
+                return
+            }
+            activity.isFinishing || activity.isDestroyed -> {
+                logError(adType, "showInterstitialAd", "activity is finishing or destroyed")
+                listener?.onAdFailedToShow()
+                return
+            }
+            adUnitId.trim().isEmpty() -> {
+                logError(adType, "showInterstitialAd", "Ad id is empty")
+                listener?.onAdFailedToShow()
+                return
+            }
+        }
+
+        val ad = pollAd(adUnitId) ?: run {
+            logError(adType, "showInterstitialAd", "Failed to poll ad")
             listener?.onAdFailedToShow()
             return
         }
 
-        if (!isAdAvailable(adUnitId)) {
-            Log.e(TAG_ADS, "$adType -> showPreloadedAd: Interstitial is not available yet")
-            listener?.onAdFailedToShow()
-            return
-        }
-
-        if (activity == null) {
-            Log.e(TAG_ADS, "$adType -> showPreloadedAd: activity reference is null")
-            listener?.onAdFailedToShow()
-            return
-        }
-
-        if (activity.isFinishing || activity.isDestroyed) {
-            Log.e(TAG_ADS, "$adType -> showPreloadedAd: activity is finishing or destroyed")
-            listener?.onAdFailedToShow()
-            return
-        }
-
-        if (adUnitId.trim().isEmpty()) {
-            Log.e(TAG_ADS, "$adType -> showPreloadedAd: Ad id is empty")
-            listener?.onAdFailedToShow()
-            return
-        }
-
-        val ad: InterstitialAd? = pollAd(adUnitId)
-        if (ad == null) {
-            Log.e(TAG_ADS, "$adType -> showPreloadedAd: Failed to poll ad")
-            listener?.onAdFailedToShow()
-            return
-        }
-
-        Log.d(TAG_ADS, "$adType -> showPreloadedAd: showing ad")
-
-        ad.adEventCallback = object : InterstitialAdEventCallback {
-            override fun onAdShowedFullScreenContent() {
-                super.onAdShowedFullScreenContent()
-                //Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdShowedFullScreenContent: called")
-                postToMain { listener?.onAdShowedFullScreenContent() }
-            }
-
-            override fun onAdImpression() {
-                super.onAdImpression()
-                Log.v(TAG_ADS, "$adType -> showPreloadedAd: onAdImpression: called")
-                adShownMap[adUnitId] = true
-                postToMain { listener?.onAdImpression() }
-                postToMainDelayed { listener?.onAdImpressionDelayed() }
-                if (!bufferSizeMap.containsKey(adUnitId)) {
-                    stopPreloading(adUnitId)
-                }
-            }
-
-            override fun onAdDismissedFullScreenContent() {
-                super.onAdDismissedFullScreenContent()
-                Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdDismissedFullScreenContent: called")
-                postToMain { listener?.onAdDismissedFullScreenContent() }
-            }
-
-            override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
-                super.onAdFailedToShowFullScreenContent(fullScreenContentError)
-                Log.e(TAG_ADS, "$adType -> showPreloadedAd: onAdFailedToShowFullScreenContent: ${fullScreenContentError.code} -- ${fullScreenContentError.message}")
-                if (!bufferSizeMap.containsKey(adUnitId)) {
-                    stopPreloading(adUnitId)
-                }
-                postToMain { listener?.onAdFailedToShow() }
-            }
-
-            override fun onAdClicked() {
-                super.onAdClicked()
-                Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdClicked: called")
-                postToMain { listener?.onAdClicked() }
-            }
-
-            override fun onAdPaid(value: AdValue) {
-                super.onAdPaid(value)
-                //Log.d(TAG_ADS, "$adType -> showPreloadedAd: onAdPaid: ${value.valueMicros} ${value.currencyCode}")
-            }
-        }
+        logDebug(adType, "showInterstitialAd", "showing ad")
+        ad.adEventCallback = createAdEventCallback(adType, adUnitId, bufferSizeMap.containsKey(adUnitId), listener)
 
         try {
             ad.show(activity)
         } catch (e: Exception) {
-            Log.e(TAG_ADS, "$adType -> showPreloadedAd: Exception showing ad: ${e.message}", e)
+            logError(adType, "showInterstitialAd", "Exception showing ad: ${e.message}")
             listener?.onAdFailedToShow()
         }
     }
 
-    fun isInterstitialAvailable(adUnitId: String): Boolean {
-        return isAdAvailable(adUnitId)
-    }
+    fun isInterstitialAvailable(adUnitId: String) = isAdAvailable(adUnitId)
 
-    fun stopPreloading(adUnitId: String) {
+    open fun stopPreloading(adUnitId: String) {
         try {
             destroyPreload(adUnitId)
             preloadStatusMap.remove(adUnitId)
             bufferSizeMap.remove(adUnitId)
             adShownMap.remove(adUnitId)
-            Log.d(TAG_ADS, "stopPreloading: Stopped preloading for ad unit: $adUnitId")
         } catch (e: Exception) {
-            Log.e(TAG_ADS, "stopPreloading: Exception: ${e.message}", e)
+            logError("", "stopPreloading", "Exception: ${e.message}")
         }
     }
 
-    fun isPreloadActive(adUnitId: String): Boolean {
-        return preloadStatusMap[adUnitId] == true
-    }
+    fun isPreloadActive(adUnitId: String) = preloadStatusMap[adUnitId] == true
 
-    protected fun wasAdShown(adUnitId: String): Boolean {
-        return adShownMap[adUnitId] == true
-    }
+    protected fun wasAdShown(adUnitId: String) = adShownMap[adUnitId] == true
 
     fun clearAll() {
         preloadStatusMap.clear()
         bufferSizeMap.clear()
         adShownMap.clear()
         mainHandler.removeCallbacksAndMessages(null)
+    }
+
+    // Private helper methods
+    private fun createPreloadConfig(adUnitId: String, bufferSize: Int?): PreloadConfiguration {
+        val adRequest = AdRequest.Builder(adUnitId).build()
+        val size = bufferSize?.takeIf { it > 0 } ?: 1
+        return PreloadConfiguration(adRequest, size)
+    }
+
+    private fun isAdAvailable(adUnitId: String) = InterstitialAdPreloader.isAdAvailable(adUnitId)
+
+    private fun pollAd(adUnitId: String) = InterstitialAdPreloader.pollAd(adUnitId)
+
+    private fun destroyPreload(adUnitId: String) = InterstitialAdPreloader.destroy(adUnitId)
+
+    private fun postToMain(action: () -> Unit) = mainHandler.post(action)
+
+    private fun postToMainDelayed(delayMillis: Long = 300, action: () -> Unit) = mainHandler.postDelayed(action, delayMillis)
+
+    private fun createPreloadCallback(
+        adType: String,
+        adUnitId: String,
+        bufferSize: Int?,
+        listener: InterstitialOnLoadCallBack?
+    ) = object : PreloadCallback {
+        override fun onAdPreloaded(preloadId: String, responseInfo: ResponseInfo) {
+            logInfo(adType, "loadInterstitialAd", "onAdLoaded: adUnitId: $preloadId")
+            preloadStatusMap[adUnitId] = true
+            postToMain { listener?.onResponse(true) }
+        }
+
+        override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
+            logError(adType, "loadInterstitialAd", "onAdFailedToLoad: adUnitId: $preloadId, adMessage: ${adError.message}")
+            preloadStatusMap[adUnitId] = false
+            if (bufferSize == null) {
+                stopPreloading(adUnitId)
+            }
+            postToMain { listener?.onResponse(false) }
+        }
+
+        override fun onAdsExhausted(preloadId: String) {
+            // No-op
+        }
+    }
+
+    private fun createAdEventCallback(
+        adType: String,
+        adUnitId: String,
+        hasBufferSize: Boolean,
+        listener: InterstitialOnShowCallBack?
+    ) = object : InterstitialAdEventCallback {
+        override fun onAdShowedFullScreenContent() {
+            super.onAdShowedFullScreenContent()
+            postToMain { listener?.onAdShowedFullScreenContent() }
+        }
+
+        override fun onAdImpression() {
+            super.onAdImpression()
+            logVerbose(adType, "showInterstitialAd", "onAdImpression: called")
+            adShownMap[adUnitId] = true
+            postToMain { listener?.onAdImpression() }
+            postToMainDelayed { listener?.onAdImpressionDelayed() }
+            if (!hasBufferSize) {
+                stopPreloading(adUnitId)
+            }
+        }
+
+        override fun onAdDismissedFullScreenContent() {
+            super.onAdDismissedFullScreenContent()
+            logDebug(adType, "showInterstitialAd", "onAdDismissedFullScreenContent: called")
+            postToMain { listener?.onAdDismissedFullScreenContent() }
+        }
+
+        override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
+            super.onAdFailedToShowFullScreenContent(fullScreenContentError)
+            logError(adType, "showInterstitialAd", "onAdFailedToShowFullScreenContent: ${fullScreenContentError.code} -- ${fullScreenContentError.message}")
+            if (!hasBufferSize) {
+                stopPreloading(adUnitId)
+            }
+            postToMain { listener?.onAdFailedToShow() }
+        }
+
+        override fun onAdClicked() {
+            super.onAdClicked()
+            logDebug(adType, "showInterstitialAd", "onAdClicked: called")
+            postToMain { listener?.onAdClicked() }
+        }
+
+        override fun onAdPaid(value: AdValue) {
+            super.onAdPaid(value)
+            // No-op (can add logging if needed)
+        }
+    }
+
+    // Logging helpers
+    private fun logError(adType: String, method: String, message: String) {
+        Log.e(TAG_ADS, "$adType -> $method: $message")
+    }
+
+    private fun logDebug(adType: String, method: String, message: String) {
+        Log.d(TAG_ADS, "$adType -> $method: $message")
+    }
+
+    private fun logInfo(adType: String, method: String, message: String) {
+        Log.i(TAG_ADS, "$adType -> $method: $message")
+    }
+
+    private fun logVerbose(adType: String, method: String, message: String) {
+        Log.v(TAG_ADS, "$adType -> $method: $message")
     }
 }
