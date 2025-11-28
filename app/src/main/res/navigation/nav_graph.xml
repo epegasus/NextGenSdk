@@ -50,6 +50,31 @@
         android:id="@+id/dashboardFragment"
         android:name="dev.pegasus.nextgensdk.ui.fragments.DashboardFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_dashboardFragment_to_exitFragment"
+            app:destination="@id/exitFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_featureOneFragment"
+            app:destination="@id/featureOneFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_featureTwoFragment"
+            app:destination="@id/featureTwoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/exitFragment"
+        android:name="dev.pegasus.nextgensdk.ui.fragments.ExitFragment"
+        android:label="fragment_exit"
+        tools:layout="@layout/fragment_exit" />
+    <fragment
+        android:id="@+id/featureOneFragment"
+        android:name="dev.pegasus.nextgensdk.FeatureOneFragment"
+        android:label="fragment_feature_one"
+        tools:layout="@layout/fragment_feature_one" />
+    <fragment
+        android:id="@+id/featureTwoFragment"
+        android:name="dev.pegasus.nextgensdk.FeatureTwoFragment"
+        android:label="fragment_feature_two"
+        tools:layout="@layout/fragment_feature_two" />
 
 </navigation>

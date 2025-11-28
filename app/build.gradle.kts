@@ -28,6 +28,9 @@ android {
             resValue("string", "admob_inter_entrance_id", "ca-app-pub-3940256099942544/1033173712")
             resValue("string", "admob_inter_on_boarding_id", "ca-app-pub-3940256099942544/1033173712")
             resValue("string", "admob_inter_dashboard_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_bottom_navigation_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_back_press_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_exit_id", "ca-app-pub-3940256099942544/1033173712")
 
             resValue("string", "admob_native_language_id", "ca-app-pub-3940256099942544/2247696110")
 
@@ -46,6 +49,9 @@ android {
             resValue("string", "admob_inter_entrance_id", "ca-app-pub-3940256099942544/1033173712")
             resValue("string", "admob_inter_on_boarding_id", "ca-app-pub-3940256099942544/1033173712")
             resValue("string", "admob_inter_dashboard_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_bottom_navigation_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_back_press_id", "ca-app-pub-3940256099942544/1033173712")
+            resValue("string", "admob_inter_exit_id", "ca-app-pub-3940256099942544/1033173712")
 
             resValue("string", "admob_native_language_id", "ca-app-pub-3940256099942544/2247696110")
 

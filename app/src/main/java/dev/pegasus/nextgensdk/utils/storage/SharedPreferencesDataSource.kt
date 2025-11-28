@@ -32,6 +32,9 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     val interEntrance = "interEntrance"
     val interOnBoarding = "interOnBoarding"
     val interDashboard = "interDashboard"
+    val interBottomNavigation = "interBottomNavigation"
+    val interBackPress = "interBackPress"
+    val interExit = "interExit"
 
     val nativeLanguage = "nativeLanguage"
     val nativeOnBoarding = "nativeOnBoarding"
@@ -74,6 +77,18 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     var rcInterDashboard: Int
         get() = sharedPreferences.getInt(interDashboard, 1)
         set(value) = sharedPreferences.edit { putInt(interDashboard, value) }
+
+    var rcInterBottomNavigation: Int
+        get() = sharedPreferences.getInt(interBottomNavigation, 1)
+        set(value) = sharedPreferences.edit { putInt(interBottomNavigation, value) }
+
+    var rcInterBackpress: Int
+        get() = sharedPreferences.getInt(interBackPress, 1)
+        set(value) = sharedPreferences.edit { putInt(interBackPress, value) }
+
+    var rcInterExit: Int
+        get() = sharedPreferences.getInt(interExit, 1)
+        set(value) = sharedPreferences.edit { putInt(interExit, value) }
 
     /**
      *  ------------------- Native Ads -------------------

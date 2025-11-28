@@ -44,6 +44,27 @@ class InterstitialAdsConfig(
                 adUnitId = getResString(R.string.admob_inter_dashboard_id),
                 isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0,
                 bufferSize = 1,
+                reuseAd = true
+            )
+
+            InterAdKey.BOTTOM_NAVIGATION -> AdConfig(
+                adUnitId = getResString(R.string.admob_inter_bottom_navigation_id),
+                isRemoteEnable = sharedPreferencesDataSource.rcInterBottomNavigation != 0,
+                bufferSize = 1,
+                reuseAd = false
+            )
+
+            InterAdKey.BACK_PRESS -> AdConfig(
+                adUnitId = getResString(R.string.admob_inter_back_press_id),
+                isRemoteEnable = sharedPreferencesDataSource.rcInterBackpress != 0,
+                bufferSize = 1,
+                reuseAd = false
+            )
+
+            InterAdKey.EXIT -> AdConfig(
+                adUnitId = getResString(R.string.admob_inter_exit_id),
+                isRemoteEnable = sharedPreferencesDataSource.rcInterExit != 0,
+                bufferSize = null,
                 reuseAd = false
             )
         }
