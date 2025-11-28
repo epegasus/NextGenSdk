@@ -44,7 +44,7 @@ class InterstitialAdsConfig(
                 adUnitId = getResString(R.string.admob_inter_dashboard_id),
                 isRemoteEnable = sharedPreferencesDataSource.rcInterDashboard != 0,
                 bufferSize = 1,
-                reuseAd = true
+                reuseAd = false
             )
         }
     }
