@@ -4,12 +4,14 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
 import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import dev.pegasus.nextgensdk.R
 import dev.pegasus.nextgensdk.databinding.FragmentOnBoardingBinding
+import dev.pegasus.nextgensdk.databinding.NativeAdViewBinding
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.nativeads.enums.NativeAdKey
@@ -45,34 +47,30 @@ class OnBoardingFragment : BaseFragment<FragmentOnBoardingBinding>(FragmentOnBoa
     }
 
     private fun bindNativeAdToContainer(nativeAd: NativeAd, container: FrameLayout) {
+        val nativeAdBinding = NativeAdViewBinding.inflate(layoutInflater)
         container.removeAllViews()
+        container.addView(nativeAdBinding.root)
 
-        val inflater: LayoutInflater = layoutInflater
-        val adView = inflater.inflate(R.layout.native_ad_view, container, false) as NativeAdView
+        // Set the native ad view elements.
+        val nativeAdView = nativeAdBinding.root
+        nativeAdView.advertiserView = nativeAdBinding.adAttribute
+        nativeAdView.bodyView = nativeAdBinding.adBody
+        nativeAdView.callToActionView = nativeAdBinding.adCallToAction
+        nativeAdView.headlineView = nativeAdBinding.adHeadline
+        nativeAdView.iconView = nativeAdBinding.adAppIcon
 
-        val headlineView: TextView = adView.findViewById(R.id.adHeadline)
-        val bodyView: TextView = adView.findViewById(R.id.adBody)
-        val iconView: ImageView = adView.findViewById(R.id.adAppIcon)
-        val ctaView: TextView = adView.findViewById(R.id.adCallToAction)
-        val mediaView: MediaView = adView.findViewById(R.id.adMedia)
+        // Set the view element with the native ad assets.
+        nativeAdBinding.adAttribute.text = nativeAd.advertiser
+        nativeAdBinding.adBody.text = nativeAd.body
+        nativeAdBinding.adCallToAction.text = nativeAd.callToAction
+        nativeAdBinding.adHeadline.text = nativeAd.headline
+        nativeAdBinding.adAppIcon.setImageDrawable(nativeAd.icon?.drawable)
 
-        adView.headlineView = headlineView
-        adView.bodyView = bodyView
-        adView.iconView = iconView
-        adView.callToActionView = ctaView
+        // Hide views for assets that don't have data.
+        nativeAdBinding.adAppIcon.isVisible = nativeAd.icon != null
 
-        headlineView.text = nativeAd.headline
-        bodyView.text = nativeAd.body
-        ctaView.text = nativeAd.callToAction
-        iconView.setImageDrawable(nativeAd.icon?.drawable)
-
-        bodyView.visibility = if (nativeAd.body == null) android.view.View.GONE else android.view.View.VISIBLE
-        iconView.visibility = if (nativeAd.icon == null) android.view.View.GONE else android.view.View.VISIBLE
-
-        container.addView(adView)
-
-        // Register native ad with its view to let SDK track impressions
-        adView.registerNativeAd(nativeAd, mediaView)
+        // Inform the Google Mobile Ads SDK that you have finished populating the native ad views with this native ad.
+        nativeAdView.registerNativeAd(nativeAd, nativeAdBinding.adMediaView)
     }
 
     private fun checkInterstitialAd() {
