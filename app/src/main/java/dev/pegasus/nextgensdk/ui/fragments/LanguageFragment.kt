@@ -34,6 +34,7 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
 
     private fun showNativeAd() {
         diComponent.nativeAdsConfig.pollNativeAd(key = NativeAdKey.LANGUAGE, showCallback = null)?.let {
+            if (isAdded.not()) return
             bindNativeAdToContainer(it, binding.flNative)
         }
     }

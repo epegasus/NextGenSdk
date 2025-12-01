@@ -98,19 +98,19 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
         set(value) = sharedPreferences.edit { putInt(nativeLanguage, value) }
 
     var rcNativeOnBoarding: Int
-        get() = sharedPreferences.getInt(nativeOnBoarding, 0)
+        get() = sharedPreferences.getInt(nativeOnBoarding, 1)
         set(value) = sharedPreferences.edit { putInt(nativeOnBoarding, value) }
 
     var rcNativeHome: Int
-        get() = sharedPreferences.getInt(nativeHome, 0)
+        get() = sharedPreferences.getInt(nativeHome, 1)
         set(value) = sharedPreferences.edit { putInt(nativeHome, value) }
 
     var rcNativeFeature: Int
-        get() = sharedPreferences.getInt(nativeFeature, 0)
+        get() = sharedPreferences.getInt(nativeFeature, 1)
         set(value) = sharedPreferences.edit { putInt(nativeFeature, value) }
 
     var rcNativeExit: Int
-        get() = sharedPreferences.getInt(nativeExit, 0)
+        get() = sharedPreferences.getInt(nativeExit, 1)
         set(value) = sharedPreferences.edit { putInt(nativeExit, value) }
 
     /**
@@ -121,6 +121,6 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
         set(value) = sharedPreferences.edit { putInt(rewardedAiFeature, value) }
 
     var rcRewardedInterAiFeature: Int
-        get() = sharedPreferences.getInt(rewardedInterAiFeature, 0)
+        get() = sharedPreferences.getInt(rewardedInterAiFeature, 1)
         set(value) = sharedPreferences.edit { putInt(rewardedInterAiFeature, value) }
 }
