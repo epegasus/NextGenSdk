@@ -7,10 +7,10 @@ import android.view.View
 import androidx.navigation.fragment.findNavController
 import dev.pegasus.nextgensdk.R
 import dev.pegasus.nextgensdk.databinding.FragmentEntranceBinding
-import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
-import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.inter.enums.InterAdKey
-import dev.pegasus.nextgensdk.nativeads.enums.NativeAdKey
+import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnLoadCallBack
+import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
+import dev.pegasus.nextgensdk.ads.interstitialAds.enums.InterAdKey
+import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG
 

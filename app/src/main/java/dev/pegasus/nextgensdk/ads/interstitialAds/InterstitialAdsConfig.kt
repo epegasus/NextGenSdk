@@ -1,14 +1,14 @@
-package dev.pegasus.nextgensdk.inter
+package dev.pegasus.nextgensdk.ads.interstitialAds
 
 import android.app.Activity
 import android.content.res.Resources
 import android.util.Log
 import androidx.annotation.StringRes
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
-import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.inter.enums.InterAdKey
-import dev.pegasus.nextgensdk.inter.manager.InterstitialAdsManager
+import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnLoadCallBack
+import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
+import dev.pegasus.nextgensdk.ads.interstitialAds.enums.InterAdKey
+import dev.pegasus.nextgensdk.ads.interstitialAds.manager.InterstitialAdsManager
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
 import dev.pegasus.nextgensdk.utils.network.InternetManager
 import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource

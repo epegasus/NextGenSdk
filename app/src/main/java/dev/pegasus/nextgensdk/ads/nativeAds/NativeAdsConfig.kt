@@ -1,12 +1,12 @@
-package dev.pegasus.nextgensdk.nativeads
+package dev.pegasus.nextgensdk.ads.nativeAds
 
 import android.content.res.Resources
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.nativeads.callbacks.NativeOnLoadCallback
-import dev.pegasus.nextgensdk.nativeads.callbacks.NativeOnShowCallback
-import dev.pegasus.nextgensdk.nativeads.enums.NativeAdKey
-import dev.pegasus.nextgensdk.nativeads.manager.NativeAdsManager
+import dev.pegasus.nextgensdk.ads.nativeAds.callbacks.NativeOnLoadCallback
+import dev.pegasus.nextgensdk.ads.nativeAds.callbacks.NativeOnShowCallback
+import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
+import dev.pegasus.nextgensdk.ads.nativeAds.manager.NativeAdsManager
 import dev.pegasus.nextgensdk.utils.network.InternetManager
 import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
 import java.util.concurrent.ConcurrentHashMap

@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.nativeads.views
+package dev.pegasus.nextgensdk.ads.nativeAds.views
 
 import android.content.Context
 import android.util.AttributeSet

@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.inter.callbacks
+package dev.pegasus.nextgensdk.ads.interstitialAds.callbacks
 
 interface InterstitialOnShowCallBack {
     fun onAdDismissedFullScreenContent() {}

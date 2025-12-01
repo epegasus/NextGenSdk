@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.nativeads.enums
+package dev.pegasus.nextgensdk.ads.nativeAds.enums
 
 enum class NativeAdKey(val value: String) {
     LANGUAGE("language"),

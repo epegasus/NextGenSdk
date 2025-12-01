@@ -3,9 +3,9 @@ package dev.pegasus.nextgensdk.ui.fragments
 import androidx.navigation.fragment.findNavController
 import dev.pegasus.nextgensdk.R
 import dev.pegasus.nextgensdk.databinding.FragmentLanguageBinding
-import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.inter.enums.InterAdKey
-import dev.pegasus.nextgensdk.nativeads.enums.NativeAdKey
+import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
+import dev.pegasus.nextgensdk.ads.interstitialAds.enums.InterAdKey
+import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
 class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageBinding::inflate) {

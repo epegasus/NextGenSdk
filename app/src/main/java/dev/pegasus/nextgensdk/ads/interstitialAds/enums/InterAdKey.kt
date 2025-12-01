@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.inter.enums
+package dev.pegasus.nextgensdk.ads.interstitialAds.enums
 
 enum class InterAdKey(val value: String) {
     ENTRANCE("entrance"),

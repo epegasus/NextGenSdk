@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.inter.manager
+package dev.pegasus.nextgensdk.ads.interstitialAds.manager
 
 import android.app.Activity
 import android.os.Handler
@@ -12,8 +12,8 @@ import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration
 import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPreloader
-import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
-import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
+import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnLoadCallBack
+import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
 import dev.pegasus.nextgensdk.utils.network.InternetManager
 import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
