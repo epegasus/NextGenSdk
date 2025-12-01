@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class NativeAdsConfig(
     private val resources: Resources,
-    sharedPreferencesDataSource: SharedPreferencesDataSource,
+    private val sharedPreferencesDataSource: SharedPreferencesDataSource,
     internetManager: InternetManager
 ) : NativeAdsManager(sharedPreferencesDataSource, internetManager) {
 
@@ -26,33 +26,55 @@ class NativeAdsConfig(
 
     // key -> current adUnitId for that placement
     private val adInfoMap = ConcurrentHashMap<NativeAdKey, String>()
+    private val loadCallbackMap = ConcurrentHashMap<NativeAdKey, NativeOnLoadCallback>()
 
     private fun getAdConfig(key: NativeAdKey): AdConfig = when (key) {
         NativeAdKey.LANGUAGE -> AdConfig(
             adUnitId = resources.getString(R.string.admob_native_language_id),
-            isRemoteEnable = true,   // plug RC when you add it
+            isRemoteEnable = sharedPreferencesDataSource.rcNativeLanguage != 0,
             canShare = true,
             canReuse = true
         )
+
         NativeAdKey.ON_BOARDING -> AdConfig(
-            adUnitId = resources.getString(R.string.admob_native_language_id), // same test ID in debug
-            isRemoteEnable = true,
+            adUnitId = resources.getString(R.string.admob_native_language_id),
+            isRemoteEnable = sharedPreferencesDataSource.rcNativeOnBoarding != 0,
             canShare = false,
             canReuse = false
         )
+
         NativeAdKey.DASHBOARD -> AdConfig(
-            adUnitId = resources.getString(R.string.admob_native_language_id), // same test ID in debug
-            isRemoteEnable = true,
+            adUnitId = resources.getString(R.string.admob_native_language_id),
+            isRemoteEnable = sharedPreferencesDataSource.rcNativeHome != 0,
+            canShare = false,
+            canReuse = false
+        )
+
+        NativeAdKey.FEATURE -> AdConfig(
+            adUnitId = resources.getString(R.string.admob_native_feature_id),
+            isRemoteEnable = sharedPreferencesDataSource.rcNativeFeature != 0,
+            canShare = false,
+            canReuse = false
+        )
+
+        NativeAdKey.EXIT -> AdConfig(
+            adUnitId = resources.getString(R.string.admob_native_exit_id),
+            isRemoteEnable = sharedPreferencesDataSource.rcNativeExit != 0,
             canShare = false,
             canReuse = false
         )
     }
 
-    /** LANGUAGE will be preloaded ahead (EntranceFragment), others on demand. */
+    /** LANGUAGE can be preloaded ahead (EntranceFragment), others on demand. */
     fun loadNativeAd(key: NativeAdKey, listener: NativeOnLoadCallback? = null) {
         val cfg = getAdConfig(key)
 
-        // Simple v1: no cross‑reuse; LANGUAGE/ON_BOARDING/DASHBOARD each use their own logical slot.
+        // Replace any previous listener for this key (Entrance vs Language, etc.)
+        if (listener != null) {
+            loadCallbackMap[key] = listener
+        }
+
+        // Simple v1: no cross‑reuse; each key uses its own logical slot.
         startPreloadingNative(
             adType = key.value,
             adUnitId = cfg.adUnitId,
@@ -61,7 +83,8 @@ class NativeAdsConfig(
             if (isLoaded) {
                 adInfoMap[key] = cfg.adUnitId
             }
-            listener?.onResponse(isLoaded)
+            // Always notify the latest registered listener for this key
+            loadCallbackMap[key]?.onResponse(isLoaded)
         }
     }
 

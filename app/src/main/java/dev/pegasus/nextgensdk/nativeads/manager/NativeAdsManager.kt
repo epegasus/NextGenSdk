@@ -1,5 +1,7 @@
 package dev.pegasus.nextgensdk.nativeads.manager
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.google.android.libraries.ads.mobile.sdk.common.AdValue
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
@@ -25,6 +27,7 @@ abstract class NativeAdsManager(
 
     private val preloadStatusMap = ConcurrentHashMap<String, Boolean>()
     private val adShownMap = ConcurrentHashMap<String, Boolean>()
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     protected fun startPreloadingNative(
         adType: String,
@@ -68,13 +71,13 @@ abstract class NativeAdsManager(
             override fun onAdPreloaded(preloadId: String, responseInfo: ResponseInfo) {
                 Log.i(TAG_ADS, "$adType -> startPreloadingNative: onAdPreloaded: $preloadId")
                 preloadStatusMap[adUnitId] = true
-                listener?.onResponse(true)
+                postToMain { listener?.onResponse(true) }
             }
 
             override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
                 Log.e(TAG_ADS, "$adType -> startPreloadingNative: failed: ${adError.message}")
                 preloadStatusMap[adUnitId] = false
-                listener?.onResponse(false)
+                postToMain { listener?.onResponse(false) }
             }
 
             override fun onAdsExhausted(preloadId: String) {
@@ -108,13 +111,13 @@ abstract class NativeAdsManager(
             override fun onAdImpression() {
                 Log.v(TAG_ADS, "$adType -> showNative: onAdImpression")
                 adShownMap[adUnitId] = true
-                listener?.onAdImpression()
-                listener?.onAdImpressionDelayed()
+                postToMain { listener?.onAdImpression() }
+                postToMainDelayed { listener?.onAdImpressionDelayed() }
             }
 
             override fun onAdClicked() {
                 Log.d(TAG_ADS, "$adType -> showNative: onAdClicked")
-                listener?.onAdClicked()
+                postToMain { listener?.onAdImpression() }
             }
 
             override fun onAdPaid(value: AdValue) {
@@ -131,4 +134,8 @@ abstract class NativeAdsManager(
         adShownMap.clear()
         // NativeAdPreloader has no destroyAll() API in sample; we just clear our state.
     }
+
+    private fun postToMain(action: () -> Unit) = mainHandler.post(action)
+
+    private fun postToMainDelayed(delayMillis: Long = 300, action: () -> Unit) = mainHandler.postDelayed(action, delayMillis)
 }

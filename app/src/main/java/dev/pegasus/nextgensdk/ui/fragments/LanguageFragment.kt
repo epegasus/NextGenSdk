@@ -11,11 +11,12 @@ import dev.pegasus.nextgensdk.R
 import dev.pegasus.nextgensdk.databinding.FragmentLanguageBinding
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
-import dev.pegasus.nextgensdk.nativeads.callbacks.NativeOnShowCallback
 import dev.pegasus.nextgensdk.nativeads.enums.NativeAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
 class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageBinding::inflate) {
+
+    private var isLanguageNativeBound = false
 
     override fun onViewCreated() {
         loadAds()
@@ -28,8 +29,13 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
     }
 
     private fun loadNative() {
-        val nativeAd = diComponent.nativeAdsConfig.pollNativeAd(key = NativeAdKey.LANGUAGE, showCallback = null) ?: return
-        bindNativeAdToContainer(nativeAd, binding.flNative)
+        diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.LANGUAGE) { showNativeAd() }
+    }
+
+    private fun showNativeAd() {
+        diComponent.nativeAdsConfig.pollNativeAd(key = NativeAdKey.LANGUAGE, showCallback = null)?.let {
+            bindNativeAdToContainer(it, binding.flNative)
+        }
     }
 
     private fun bindNativeAdToContainer(nativeAd: NativeAd, container: FrameLayout) {
