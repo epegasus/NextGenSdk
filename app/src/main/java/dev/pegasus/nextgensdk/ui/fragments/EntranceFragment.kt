@@ -10,6 +10,7 @@ import dev.pegasus.nextgensdk.databinding.FragmentEntranceBinding
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
+import dev.pegasus.nextgensdk.nativeads.enums.NativeAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG
 
@@ -31,12 +32,14 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
 
     private fun loadAd() {
         diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnLoadCallBack {
-            override fun onResponse(successfullyLoaded: Boolean) {
-                onAdResponse("Ad loaded: $successfullyLoaded")
+            override fun onResponse(isLoaded: Boolean) {
+                onAdResponse("Ad loaded: $isLoaded")
             }
         })
-    }
 
+        // Preload native for Language screen ahead of time
+        diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.LANGUAGE)
+    }
 
     private fun onAdResponse(message: String) {
         if (isAdded.not()) return

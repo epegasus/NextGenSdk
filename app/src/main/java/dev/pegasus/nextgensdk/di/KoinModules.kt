@@ -3,6 +3,7 @@ package dev.pegasus.nextgensdk.di
 import android.content.Context
 import android.net.ConnectivityManager
 import dev.pegasus.nextgensdk.inter.InterstitialAdsConfig
+import dev.pegasus.nextgensdk.nativeads.NativeAdsConfig
 import dev.pegasus.nextgensdk.utils.network.InternetManager
 import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
 import org.koin.android.ext.koin.androidContext
@@ -24,6 +25,14 @@ private val managerModule = module {
 private val adsModule = module {
     single {
         InterstitialAdsConfig(
+            resources = androidContext().resources,
+            sharedPreferencesDataSource = get(),
+            internetManager = get()
+        )
+    }
+
+    single {
+        NativeAdsConfig(
             resources = androidContext().resources,
             sharedPreferencesDataSource = get(),
             internetManager = get()

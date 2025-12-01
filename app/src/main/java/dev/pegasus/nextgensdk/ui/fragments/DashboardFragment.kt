@@ -1,12 +1,20 @@
 package dev.pegasus.nextgensdk.ui.fragments
 
+import android.view.LayoutInflater
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import dev.pegasus.nextgensdk.R
 import dev.pegasus.nextgensdk.databinding.FragmentDashboardBinding
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnShowCallBack
 import dev.pegasus.nextgensdk.inter.enums.InterAdKey
+import dev.pegasus.nextgensdk.nativeads.callbacks.NativeOnShowCallback
+import dev.pegasus.nextgensdk.nativeads.enums.NativeAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboardBinding::inflate) {
@@ -27,20 +35,71 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
 
     private fun loadAds() {
         loadInterstitialAd()
+        loadNative()
     }
 
     private fun registerBackPress() {
-        (activity as? AppCompatActivity)?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                findNavController().navigate(R.id.action_dashboardFragment_to_exitFragment)
+        (activity as? AppCompatActivity)?.onBackPressedDispatcher?.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    findNavController().navigate(R.id.action_dashboardFragment_to_exitFragment)
+                }
             }
-        })
+        )
     }
 
     private fun loadInterstitialAd() {
         diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.DASHBOARD)
         diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.BOTTOM_NAVIGATION)
         diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.EXIT)
+    }
+
+    private fun loadNative() {
+        // Load native on demand for Dashboard
+        diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.DASHBOARD)
+
+        val nativeAd = diComponent.nativeAdsConfig.pollNativeAd(
+            key = NativeAdKey.DASHBOARD,
+            showCallback = object : NativeOnShowCallback {
+                override fun onAdImpression() {
+                    // No-op for now
+                }
+
+                override fun onAdFailedToShow() {
+                    // No-op for now
+                }
+            }
+        ) ?: return
+
+        bindNativeAdToContainer(nativeAd, binding.flNative)
+    }
+
+    private fun bindNativeAdToContainer(nativeAd: NativeAd, container: FrameLayout) {
+        container.removeAllViews()
+
+        val inflater: LayoutInflater = layoutInflater
+        val adView = inflater.inflate(R.layout.native_ad_view, container, false) as NativeAdView
+
+        val headlineView: TextView = adView.findViewById(R.id.adHeadline)
+        val bodyView: TextView = adView.findViewById(R.id.adBody)
+        val iconView: ImageView = adView.findViewById(R.id.adAppIcon)
+        val ctaView: TextView = adView.findViewById(R.id.adCallToAction)
+
+        adView.headlineView = headlineView
+        adView.bodyView = bodyView
+        adView.iconView = iconView
+        adView.callToActionView = ctaView
+
+        headlineView.text = nativeAd.headline
+        bodyView.text = nativeAd.body
+        ctaView.text = nativeAd.callToAction
+        iconView.setImageDrawable(nativeAd.icon?.drawable)
+
+        bodyView.visibility = if (nativeAd.body == null) android.view.View.GONE else android.view.View.VISIBLE
+        iconView.visibility = if (nativeAd.icon == null) android.view.View.GONE else android.view.View.VISIBLE
+
+        container.addView(adView)
     }
 
     private fun checkInterstitialAd(caseType: Int) {

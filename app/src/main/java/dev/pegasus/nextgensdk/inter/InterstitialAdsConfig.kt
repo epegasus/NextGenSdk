@@ -250,8 +250,8 @@ class InterstitialAdsConfig(
         config: AdConfig,
         originalListener: InterstitialOnLoadCallBack?
     ) = object : InterstitialOnLoadCallBack {
-        override fun onResponse(successfullyLoaded: Boolean) {
-            if (successfullyLoaded) {
+        override fun onResponse(isLoaded: Boolean) {
+            if (isLoaded) {
                 adInfoMap[adType] = AdInfo(
                     adUnitId = config.adUnitId,
                     canShare = config.canShare,
@@ -259,7 +259,7 @@ class InterstitialAdsConfig(
                     bufferSize = config.bufferSize
                 )
             }
-            originalListener?.onResponse(successfullyLoaded)
+            originalListener?.onResponse(isLoaded)
         }
     }
 
