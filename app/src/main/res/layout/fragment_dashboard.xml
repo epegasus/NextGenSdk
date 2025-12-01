@@ -39,16 +39,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mbFeatureOne" />
 
-    <FrameLayout
-        android:id="@+id/flNative"
+    <dev.pegasus.nextgensdk.nativeads.views.NativeAdLargeView
+        android:id="@+id/nativeAdView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:background="#DCDCDC"
         app:layout_constraintBottom_toTopOf="@+id/mbMenuOne"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_height="120dp" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/mbMenuOne"
