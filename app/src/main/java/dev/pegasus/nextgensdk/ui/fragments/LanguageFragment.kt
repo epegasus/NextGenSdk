@@ -1,6 +1,7 @@
 package dev.pegasus.nextgensdk.ui.fragments
 
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -63,8 +64,8 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
         iconView.setImageDrawable(nativeAd.icon?.drawable)
 
         // Basic visibility handling
-        bodyView.visibility = if (nativeAd.body == null) android.view.View.GONE else android.view.View.VISIBLE
-        iconView.visibility = if (nativeAd.icon == null) android.view.View.GONE else android.view.View.VISIBLE
+        bodyView.visibility = if (nativeAd.body == null) View.GONE else View.VISIBLE
+        iconView.visibility = if (nativeAd.icon == null) View.GONE else View.VISIBLE
 
         // In the official sample they also call registerNativeAd(nativeAd, mediaView)
         // Here we skip media for now – you can extend this when you add a media view.

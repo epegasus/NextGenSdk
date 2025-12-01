@@ -26,62 +26,66 @@ abstract class NativeAdsManager(
 ) {
 
     private val preloadStatusMap = ConcurrentHashMap<String, Boolean>()
+    private val bufferSizeMap = ConcurrentHashMap<String, Int>()
     private val adShownMap = ConcurrentHashMap<String, Boolean>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    protected fun startPreloadingNative(
+    // Mirrors interstitial loadInterstitialAd (low‑level preload entry)
+    protected fun loadNativeAd(
         adType: String,
         adUnitId: String,
         isRemoteEnable: Boolean,
+        bufferSize: Int? = null,
         listener: NativeOnLoadCallback? = null
     ) {
         if (!isRemoteEnable) {
-            Log.e(TAG_ADS, "$adType -> startPreloadingNative: Remote config is off")
+            logError(adType, "loadNativeAd", "Remote config is off")
             listener?.onResponse(false); return
         }
         if (sharedPrefs.isAppPurchased) {
-            Log.e(TAG_ADS, "$adType -> startPreloadingNative: Premium user")
+            logError(adType, "loadNativeAd", "Premium user")
             listener?.onResponse(false); return
         }
         if (adUnitId.isBlank()) {
-            Log.e(TAG_ADS, "$adType -> startPreloadingNative: Ad id is empty")
+            logError(adType, "loadNativeAd", "Ad id is empty")
             listener?.onResponse(false); return
         }
         if (!internetManager.isInternetConnected) {
-            Log.e(TAG_ADS, "$adType -> startPreloadingNative: Internet is not connected")
+            logError(adType, "loadNativeAd", "Internet is not connected")
             listener?.onResponse(false); return
         }
 
+        bufferSize?.let { bufferSizeMap[adUnitId] = it }
+
         if (preloadStatusMap[adUnitId] == true &&
-            NativeAdPreloader.isAdAvailable(adUnitId)
+            isAdAvailable(adUnitId)
         ) {
-            Log.d(TAG_ADS, "$adType -> startPreloadingNative: Ad already available")
+            logDebug(adType, "loadNativeAd", "Ad already available")
             listener?.onResponse(true); return
         }
 
-        val request = NativeAdRequest.Builder(
-            adUnitId,
-            listOf(NativeAd.NativeAdType.NATIVE)
-        ).build()
-
-        val preloadConfig = PreloadConfiguration(request)
-        Log.d(TAG_ADS, "$adType -> startPreloadingNative: requesting server")
+        val preloadConfig = createPreloadConfig(adUnitId, bufferSize)
+        logDebug(adType, "loadNativeAd", "Requesting server (bufferSize=$bufferSize)")
 
         val callback = object : PreloadCallback {
             override fun onAdPreloaded(preloadId: String, responseInfo: ResponseInfo) {
-                Log.i(TAG_ADS, "$adType -> startPreloadingNative: onAdPreloaded: $preloadId")
+                logInfo(adType, "loadNativeAd", "onAdPreloaded: $preloadId")
                 preloadStatusMap[adUnitId] = true
                 postToMain { listener?.onResponse(true) }
             }
 
             override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
-                Log.e(TAG_ADS, "$adType -> startPreloadingNative: failed: ${adError.message}")
+                logError(adType, "loadNativeAd", "failed: ${adError.message}")
                 preloadStatusMap[adUnitId] = false
+                // For non-buffered ads, clear preload on failure (same behavior as interstitials)
+                if (!bufferSizeMap.containsKey(adUnitId)) {
+                    stopPreloading(adUnitId)
+                }
                 postToMain { listener?.onResponse(false) }
             }
 
             override fun onAdsExhausted(preloadId: String) {
-                Log.d(TAG_ADS, "$adType -> startPreloadingNative: onAdsExhausted: $preloadId")
+                logDebug(adType, "loadNativeAd", "onAdsExhausted: $preloadId")
             }
         }
 
@@ -89,53 +93,100 @@ abstract class NativeAdsManager(
         preloadStatusMap[adUnitId] = true
     }
 
-    protected fun pollNativeAd(adType: String, adUnitId: String): NativeAd? {
-        val result = NativeAdPreloader.pollAd(adUnitId)
-        return if (result is NativeAdSuccess) {
-            val ad = result.ad
-            Log.d(TAG_ADS, "$adType -> pollNativeAd: got ad, responseInfo=${ad.getResponseInfo()}")
+    protected fun pollNativeAd(adType: String, adUnitId: String, listener: NativeOnShowCallback?): NativeAd? {
+        return pollAd(adUnitId)?.let { ad ->
+            logDebug(adType, "pollNativeAd", "got ad, responseInfo=${ad.getResponseInfo().responseId}")
+
+            ad.adEventCallback = object : NativeAdEventCallback {
+                override fun onAdImpression() {
+                    logVerbose(adType, "pollNativeAd", "onAdImpression")
+                    adShownMap[adUnitId] = true
+                    postToMain { listener?.onAdImpression() }
+                    postToMainDelayed { listener?.onAdImpressionDelayed() }
+                    // For non-buffered ads, clear preload after first impression
+                    if (!bufferSizeMap.containsKey(adUnitId)) {
+                        stopPreloading(adUnitId)
+                    }
+                }
+
+                override fun onAdClicked() {
+                    logDebug(adType, "pollNativeAd", "onAdClicked")
+                    postToMain { listener?.onAdClicked() }
+                }
+
+                override fun onAdPaid(value: AdValue) {
+                    logDebug(adType, "pollNativeAd", "onPaid ${value.valueMicros} ${value.currencyCode}")
+                }
+            }
             ad
-        } else {
-            Log.e(TAG_ADS, "$adType -> pollNativeAd: no ad available")
+        } ?: run {
+            logError(adType, "pollNativeAd", "no ad available")
             null
-        }
-    }
-
-    protected fun attachShowCallbacks(
-        adType: String,
-        adUnitId: String,
-        nativeAd: NativeAd,
-        listener: NativeOnShowCallback?
-    ) {
-        nativeAd.adEventCallback = object : NativeAdEventCallback {
-            override fun onAdImpression() {
-                Log.v(TAG_ADS, "$adType -> showNative: onAdImpression")
-                adShownMap[adUnitId] = true
-                postToMain { listener?.onAdImpression() }
-                postToMainDelayed { listener?.onAdImpressionDelayed() }
-            }
-
-            override fun onAdClicked() {
-                Log.d(TAG_ADS, "$adType -> showNative: onAdClicked")
-                postToMain { listener?.onAdImpression() }
-            }
-
-            override fun onAdPaid(value: AdValue) {
-                Log.d(TAG_ADS, "$adType -> showNative: onPaid ${value.valueMicros} ${value.currencyCode}")
-            }
         }
     }
 
     protected fun wasNativeShown(adUnitId: String): Boolean =
         adShownMap[adUnitId] == true
 
+    /** Mirror interstitial stopPreloading: destroy + clear all maps for this adUnitId. */
+    open fun stopPreloading(adUnitId: String) {
+        try {
+            destroyPreload(adUnitId)
+            preloadStatusMap.remove(adUnitId)
+            bufferSizeMap.remove(adUnitId)
+            adShownMap.remove(adUnitId)
+        } catch (e: Exception) {
+            logError("", "stopPreloading (native)", "Exception: ${e.message}")
+        }
+    }
+
+    fun isPreloadActive(adUnitId: String): Boolean = preloadStatusMap[adUnitId] == true
+
     fun clearAllNative() {
         preloadStatusMap.clear()
+        bufferSizeMap.clear()
         adShownMap.clear()
         // NativeAdPreloader has no destroyAll() API in sample; we just clear our state.
     }
 
+    // Private helper methods (mirroring interstitial manager)
+    private fun createPreloadConfig(adUnitId: String, bufferSize: Int?): PreloadConfiguration {
+        val request = NativeAdRequest.Builder(adUnitId, listOf(NativeAd.NativeAdType.NATIVE)).build()
+        val size = bufferSize?.takeIf { it > 0 } ?: 1
+        return PreloadConfiguration(request, size)
+    }
+
+    private fun isAdAvailable(adUnitId: String): Boolean =
+        NativeAdPreloader.isAdAvailable(adUnitId)
+
+    private fun pollAd(adUnitId: String): NativeAd? {
+        val result = NativeAdPreloader.pollAd(adUnitId)
+        return if (result is NativeAdSuccess) result.ad else null
+    }
+
+    private fun destroyPreload(adUnitId: String) {
+        NativeAdPreloader.destroy(adUnitId)
+    }
+
     private fun postToMain(action: () -> Unit) = mainHandler.post(action)
 
-    private fun postToMainDelayed(delayMillis: Long = 300, action: () -> Unit) = mainHandler.postDelayed(action, delayMillis)
+    private fun postToMainDelayed(delayMillis: Long = 300, action: () -> Unit) =
+        mainHandler.postDelayed(action, delayMillis)
+
+    // Logging helpers (mirroring interstitial manager)
+    private fun logError(adType: String, method: String, message: String) {
+        Log.e(TAG_ADS, "$adType -> $method: $message")
+    }
+
+    private fun logDebug(adType: String, method: String, message: String) {
+        Log.d(TAG_ADS, "$adType -> $method: $message")
+    }
+
+    private fun logInfo(adType: String, method: String, message: String) {
+        Log.i(TAG_ADS, "$adType -> $method: $message")
+    }
+
+    private fun logVerbose(adType: String, method: String, message: String) {
+        Log.v(TAG_ADS, "$adType -> $method: $message")
+    }
 }

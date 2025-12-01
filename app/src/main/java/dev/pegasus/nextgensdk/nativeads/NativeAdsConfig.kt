@@ -20,6 +20,7 @@ class NativeAdsConfig(
     private data class AdConfig(
         val adUnitId: String,
         val isRemoteEnable: Boolean,
+        val bufferSize: Int?,       // mirrors interstitial buffer logic
         val canShare: Boolean,
         val canReuse: Boolean,
     )
@@ -32,6 +33,7 @@ class NativeAdsConfig(
         NativeAdKey.LANGUAGE -> AdConfig(
             adUnitId = resources.getString(R.string.admob_native_language_id),
             isRemoteEnable = sharedPreferencesDataSource.rcNativeLanguage != 0,
+            bufferSize = null,   // single ad at a time
             canShare = true,
             canReuse = true
         )
@@ -39,6 +41,7 @@ class NativeAdsConfig(
         NativeAdKey.ON_BOARDING -> AdConfig(
             adUnitId = resources.getString(R.string.admob_native_language_id),
             isRemoteEnable = sharedPreferencesDataSource.rcNativeOnBoarding != 0,
+            bufferSize = null,
             canShare = false,
             canReuse = false
         )
@@ -46,6 +49,7 @@ class NativeAdsConfig(
         NativeAdKey.DASHBOARD -> AdConfig(
             adUnitId = resources.getString(R.string.admob_native_language_id),
             isRemoteEnable = sharedPreferencesDataSource.rcNativeHome != 0,
+            bufferSize = 1,      // dashboard can benefit from 1 buffered ad
             canShare = false,
             canReuse = false
         )
@@ -53,6 +57,7 @@ class NativeAdsConfig(
         NativeAdKey.FEATURE -> AdConfig(
             adUnitId = resources.getString(R.string.admob_native_feature_id),
             isRemoteEnable = sharedPreferencesDataSource.rcNativeFeature != 0,
+            bufferSize = null,
             canShare = false,
             canReuse = false
         )
@@ -60,6 +65,7 @@ class NativeAdsConfig(
         NativeAdKey.EXIT -> AdConfig(
             adUnitId = resources.getString(R.string.admob_native_exit_id),
             isRemoteEnable = sharedPreferencesDataSource.rcNativeExit != 0,
+            bufferSize = null,
             canShare = false,
             canReuse = false
         )
@@ -75,10 +81,11 @@ class NativeAdsConfig(
         }
 
         // Simple v1: no cross‑reuse; each key uses its own logical slot.
-        startPreloadingNative(
+        loadNativeAd(
             adType = key.value,
             adUnitId = cfg.adUnitId,
-            isRemoteEnable = cfg.isRemoteEnable
+            isRemoteEnable = cfg.isRemoteEnable,
+            bufferSize = cfg.bufferSize
         ) { isLoaded ->
             if (isLoaded) {
                 adInfoMap[key] = cfg.adUnitId
@@ -101,9 +108,7 @@ class NativeAdsConfig(
         showCallback: NativeOnShowCallback? = null
     ): NativeAd? {
         val adUnitId = adInfoMap[key] ?: return null
-        val ad = pollNativeAd(key.value, adUnitId) ?: return null
-        attachShowCallbacks(key.value, adUnitId, ad, showCallback)
-        return ad
+        return pollNativeAd(key.value, adUnitId, showCallback) ?: return null
     }
 
     fun clearNativeAd(key: NativeAdKey) {
