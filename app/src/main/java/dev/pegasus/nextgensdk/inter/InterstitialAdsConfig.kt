@@ -58,7 +58,7 @@ class InterstitialAdsConfig(
             resId = R.string.admob_inter_back_press_id,
             remoteConfigKey = { sharedPreferencesDataSource.rcInterBackpress != 0 },
             bufferSize = 1,
-            canShare = true,
+            canShare = false,
             canReuse = true
         ),
         InterAdKey.EXIT to AdConfigData(
@@ -66,7 +66,7 @@ class InterstitialAdsConfig(
             remoteConfigKey = { sharedPreferencesDataSource.rcInterExit != 0 },
             bufferSize = null,
             canShare = false,
-            canReuse = true
+            canReuse = false
         )
     )
 
@@ -167,10 +167,12 @@ class InterstitialAdsConfig(
                 logError(adType.value, "showInterstitialAd", "Ad not loaded for this screen. canReuse=false, so cannot use other ads.")
                 listener?.onAdFailedToShow()
             }
+
             adInfo == null -> {
                 logError(adType.value, "showInterstitialAd", "Ad unit ID not found. Make sure to load ad first.")
                 listener?.onAdFailedToShow()
             }
+
             else -> showInterstitialAd(activity, adType.value, adInfo.adUnitId, listener)
         }
     }
@@ -183,10 +185,10 @@ class InterstitialAdsConfig(
         // Helper to check if ad is reusable
         fun isReusable(adType: InterAdKey, info: AdInfo): Boolean {
             return adType != requestedAdType
-                && !wasAdShown(info.adUnitId)
-                && isInterstitialAvailable(info.adUnitId)
-                && isPreloadActive(info.adUnitId)
-                && info.canShare
+                    && !wasAdShown(info.adUnitId)
+                    && isInterstitialAvailable(info.adUnitId)
+                    && isPreloadActive(info.adUnitId)
+                    && info.canShare
         }
 
         // Priority: same adUnitId match
@@ -234,11 +236,11 @@ class InterstitialAdsConfig(
 
     // Helper functions
     private fun getResString(@StringRes resId: Int) = resources.getString(resId)
-    
+
     private fun logError(adType: String, method: String, message: String) {
         Log.e(TAG_ADS, "$adType -> $method: $message")
     }
-    
+
     private fun logDebug(adType: String, method: String, message: String) {
         Log.d(TAG_ADS, "$adType -> $method: $message")
     }

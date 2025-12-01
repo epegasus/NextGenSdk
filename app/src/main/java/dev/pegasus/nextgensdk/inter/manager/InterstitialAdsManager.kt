@@ -5,13 +5,11 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
-import com.google.android.libraries.ads.mobile.sdk.common.AdValue
 import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback
 import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration
 import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo
-import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPreloader
 import dev.pegasus.nextgensdk.inter.callbacks.InterstitialOnLoadCallBack
@@ -45,16 +43,19 @@ abstract class InterstitialAdsManager(
                 listener?.onResponse(false)
                 return
             }
+
             sharedPreferencesDataSource.isAppPurchased -> {
                 logError(adType, "loadInterstitialAd", "Premium user")
                 listener?.onResponse(false)
                 return
             }
+
             adUnitId.trim().isEmpty() -> {
                 logError(adType, "loadInterstitialAd", "Ad id is empty")
                 listener?.onResponse(false)
                 return
             }
+
             !internetManager.isInternetConnected -> {
                 logError(adType, "loadInterstitialAd", "Internet is not connected")
                 listener?.onResponse(false)
@@ -67,10 +68,11 @@ abstract class InterstitialAdsManager(
         // Check if already loading or available
         when {
             preloadStatusMap[adUnitId] == true -> {
-                logDebug(adType, "loadInterstitialAd", "Ad is already loading for this ad unit: $adUnitId")
+                logError(adType, "loadInterstitialAd", "Ad is already loading for this ad unit: $adUnitId")
                 listener?.onResponse(isAdAvailable(adUnitId))
                 return
             }
+
             isAdAvailable(adUnitId) -> {
                 logInfo(adType, "loadInterstitialAd", "Ad already available")
                 preloadStatusMap[adUnitId] = true
@@ -112,21 +114,25 @@ abstract class InterstitialAdsManager(
                 listener?.onAdFailedToShow()
                 return
             }
+
             !isAdAvailable(adUnitId) -> {
                 logError(adType, "showInterstitialAd", "Interstitial is not available yet")
                 listener?.onAdFailedToShow()
                 return
             }
+
             activity == null -> {
                 logError(adType, "showInterstitialAd", "activity reference is null")
                 listener?.onAdFailedToShow()
                 return
             }
+
             activity.isFinishing || activity.isDestroyed -> {
                 logError(adType, "showInterstitialAd", "activity is finishing or destroyed")
                 listener?.onAdFailedToShow()
                 return
             }
+
             adUnitId.trim().isEmpty() -> {
                 logError(adType, "showInterstitialAd", "Ad id is empty")
                 listener?.onAdFailedToShow()
@@ -259,11 +265,6 @@ abstract class InterstitialAdsManager(
             super.onAdClicked()
             logDebug(adType, "showInterstitialAd", "onAdClicked: called")
             postToMain { listener?.onAdClicked() }
-        }
-
-        override fun onAdPaid(value: AdValue) {
-            super.onAdPaid(value)
-            // No-op (can add logging if needed)
         }
     }
 
