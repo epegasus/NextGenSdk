@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
+import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import dev.pegasus.nextgensdk.R
@@ -85,6 +86,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
         val bodyView: TextView = adView.findViewById(R.id.adBody)
         val iconView: ImageView = adView.findViewById(R.id.adAppIcon)
         val ctaView: TextView = adView.findViewById(R.id.adCallToAction)
+        val mediaView: MediaView = adView.findViewById(R.id.adMedia)
 
         adView.headlineView = headlineView
         adView.bodyView = bodyView
@@ -100,6 +102,9 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
         iconView.visibility = if (nativeAd.icon == null) android.view.View.GONE else android.view.View.VISIBLE
 
         container.addView(adView)
+
+        // Register native ad with its view so SDK can track impressions
+        adView.registerNativeAd(nativeAd, mediaView)
     }
 
     private fun checkInterstitialAd(caseType: Int) {

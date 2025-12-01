@@ -6,6 +6,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
+import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import dev.pegasus.nextgensdk.R
@@ -51,6 +52,7 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
         val bodyView: TextView = adView.findViewById(R.id.adBody)
         val iconView: ImageView = adView.findViewById(R.id.adAppIcon)
         val ctaView: TextView = adView.findViewById(R.id.adCallToAction)
+        val mediaView: MediaView = adView.findViewById(R.id.adMedia)
 
         adView.headlineView = headlineView
         adView.bodyView = bodyView
@@ -67,10 +69,10 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
         bodyView.visibility = if (nativeAd.body == null) View.GONE else View.VISIBLE
         iconView.visibility = if (nativeAd.icon == null) View.GONE else View.VISIBLE
 
-        // In the official sample they also call registerNativeAd(nativeAd, mediaView)
-        // Here we skip media for now – you can extend this when you add a media view.
-
         container.addView(adView)
+
+        // Important: register the native ad with its view so impressions are tracked
+        adView.registerNativeAd(nativeAd, mediaView)
     }
 
     private fun checkInterstitialAd() {
