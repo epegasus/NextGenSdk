@@ -1,13 +1,13 @@
 package dev.pegasus.nextgensdk.di
 
 import com.hypersoft.admobpreloader.interstitialAds.InterstitialAdsManager
-import dev.pegasus.nextgensdk.ads.nativeAds.NativeAdsConfig
+import com.hypersoft.admobpreloader.nativeAds.NativeAdsManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class DIComponent : KoinComponent {
 
     val interstitialAdsManager by inject<InterstitialAdsManager>()
-    val nativeAdsConfig by inject<NativeAdsConfig>()
+    val nativeAdsManager by inject<NativeAdsManager>()
 
 }

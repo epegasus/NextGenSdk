@@ -9,7 +9,7 @@ import dev.pegasus.nextgensdk.R
 import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialLoadListener
 import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
 import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
-import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
+import com.hypersoft.admobpreloader.nativeAds.enums.NativeAdKey
 import dev.pegasus.nextgensdk.databinding.FragmentEntranceBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG
@@ -37,7 +37,7 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
         })
 
         // Preload native for Language screen ahead of time
-        diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.LANGUAGE)
+        diComponent.nativeAdsManager.loadNativeAd(NativeAdKey.LANGUAGE)
     }
 
     private fun onAdResponse(message: String) {

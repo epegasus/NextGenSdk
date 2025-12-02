@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
 import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
+import com.hypersoft.admobpreloader.nativeAds.enums.NativeAdKey
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
 import dev.pegasus.nextgensdk.databinding.FragmentDashboardBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
@@ -49,11 +49,11 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
     }
 
     private fun loadNative() {
-        //diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.DASHBOARD) { showNativeAd() }
+        //diComponent.nativeAdsManager.loadNativeAd(NativeAdKey.DASHBOARD) { showNativeAd() }
     }
 
     private fun showNativeAd() {
-        diComponent.nativeAdsConfig.pollNativeAd(key = NativeAdKey.DASHBOARD, showCallback = null)?.let {
+        diComponent.nativeAdsManager.pollNativeAd(key = NativeAdKey.DASHBOARD, showCallback = null)?.let {
             if (isAdded.not()) return
             binding.nativeAdView.setNativeAd(it)
         }

@@ -4,7 +4,7 @@ import androidx.navigation.fragment.findNavController
 import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
 import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
+import com.hypersoft.admobpreloader.nativeAds.enums.NativeAdKey
 import dev.pegasus.nextgensdk.databinding.FragmentLanguageBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
@@ -21,11 +21,11 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
     }
 
     private fun loadNative() {
-        diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.LANGUAGE) { showNativeAd() }
+        diComponent.nativeAdsManager.loadNativeAd(NativeAdKey.LANGUAGE) { showNativeAd() }
     }
 
     private fun showNativeAd() {
-        diComponent.nativeAdsConfig.pollNativeAd(key = NativeAdKey.LANGUAGE, showCallback = null)?.let {
+        diComponent.nativeAdsManager.pollNativeAd(key = NativeAdKey.LANGUAGE, showCallback = null)?.let {
             if (isAdded.not()) return
             binding.nativeAdView.setNativeAd(it)
         }
