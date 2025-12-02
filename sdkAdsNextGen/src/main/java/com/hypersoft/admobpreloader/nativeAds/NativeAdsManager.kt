@@ -52,7 +52,7 @@ class NativeAdsManager internal constructor(
                 isRemoteEnabled = sharedPrefs.rcNativeOnBoarding != 0,
                 bufferSize = null,
                 canShare = false,
-                canReuse = false
+                canReuse = true
             ),
             NativeAdKey.DASHBOARD to AdConfig(
                 adUnitId = resources.getString(R.string.admob_native_home_id),
