@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdPreloader
 import com.hypersoft.admobpreloader.R
 import com.hypersoft.admobpreloader.bannerAds.callbacks.BannerOnLoadCallback
 import com.hypersoft.admobpreloader.bannerAds.callbacks.BannerOnShowCallback
@@ -55,7 +56,7 @@ class BannerAdsManager internal constructor(
             BannerAdKey.ENTRANCE to AdConfig(
                 adUnitId = context.getString(R.string.admob_banner_entrance_id),
                 isRemoteEnabled = sharedPrefs.rcBannerEntrance != 0,
-                bannerAdType = BannerAdType.COLLAPSIBLE_BOTTOM,
+                bannerAdType = BannerAdType.ADAPTIVE,
                 bufferSize = null,
                 canShare = true,
                 canReuse = false
@@ -134,6 +135,17 @@ class BannerAdsManager internal constructor(
         // register config for lookups
         registry.putInfo(key, AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize, adSize, extras))
 
+        // Reuse policy (type-aware):
+        //  - MEDIUM_RECTANGLE: only reused by other MREC requests
+        //  - COLLAPSIBLE_TOP/BOTTOM: prefer same type; if none, may reuse ADAPTIVE
+        //  - ADAPTIVE: only reused by other ADAPTIVE requests
+        val existingReusableKey = findReusableAdFor(key)
+        if (existingReusableKey != null) {
+            AdLogger.logDebug(key.value, "loadBannerAd", "Reusing available banner from ${existingReusableKey.value}")
+            listener?.onResponse(true)
+            return
+        }
+
         AdLogger.logDebug(key.value, "loadBannerAd", "Requesting server for banner ad...")
         preloadEngine.startPreload(
             key,
@@ -151,13 +163,27 @@ class BannerAdsManager internal constructor(
         key: BannerAdKey,
         showCallback: BannerOnShowCallback? = null
     ): BannerAd? {
-        val info = registry.getInfo(key) ?: run {
-            AdLogger.logError(key.value, "pollBannerAd", "Ad info not found for this key. Did you call loadBannerAd()?")
-            showCallback?.onAdFailedToShow()
-            return null
+        val info = registry.getInfo(key)
+
+        // First, try to show this key's own ad if available.
+        if (info != null && BannerAdPreloader.isAdAvailable(info.adUnitId)) {
+            return showEngine.pollAd(key, info.adUnitId, showCallback)
         }
 
-        return showEngine.pollAd(key, info.adUnitId, showCallback)
+        // If own ad is not available but this placement canReuse, try to find a reusable ad from another key.
+        val reusableKey = findReusableAdFor(key)
+        if (reusableKey != null) {
+            val reusableInfo = registry.getInfo(reusableKey)
+            val unit = reusableInfo?.adUnitId
+            if (unit != null && BannerAdPreloader.isAdAvailable(unit)) {
+                AdLogger.logDebug(key.value, "pollBannerAd", "Reusing available banner from ${reusableKey.value}")
+                return showEngine.pollAd(key, unit, showCallback)
+            }
+        }
+
+        AdLogger.logError(key.value, "pollBannerAd", "Ad info not found or no banner available for this key")
+        showCallback?.onAdFailedToShow()
+        return null
     }
 
     /**
@@ -177,5 +203,55 @@ class BannerAdsManager internal constructor(
         AdLogger.logDebug("", "clearAllBannerAds", "Clearing all banner ads")
         registry.clearAll()
         preloadEngine.stopAll()
+    }
+
+    /**
+     * Helper: find any reusable banner key for the requested key, obeying canShare/canReuse flags
+     * and BannerAdType compatibility rules.
+     */
+    private fun findReusableAdFor(requested: BannerAdKey): BannerAdKey? {
+        val requestedInfo = registry.getInfo(requested) ?: return null
+
+        // If this placement is not allowed to reuse others, bail out.
+        if (!requestedInfo.canReuse) return null
+
+        val requestedType = adConfigMap[requested]?.bannerAdType ?: return null
+
+        // Snapshot of current registry entries
+        val entries: List<Pair<BannerAdKey, AdInfo>> = adConfigMap.keys.mapNotNull { key ->
+            registry.getInfo(key)?.let { info -> key to info }
+        }
+
+        // Helper to filter candidates by generic availability/share flags
+        fun baseFilter(key: BannerAdKey, info: AdInfo): Boolean {
+            return key != requested &&
+                    info.canShare &&
+                    !registry.wasAdShown(info.adUnitId) &&
+                    registry.isPreloadActive(info.adUnitId) &&
+                    BannerAdPreloader.isAdAvailable(info.adUnitId)
+        }
+
+        // 1) Prefer same-type reuse first
+        val sameTypeCandidate = entries.firstOrNull { (key, info) ->
+            if (!baseFilter(key, info)) return@firstOrNull false
+            val candidateType = adConfigMap[key]?.bannerAdType ?: return@firstOrNull false
+            candidateType == requestedType
+        }?.first
+
+        if (sameTypeCandidate != null) return sameTypeCandidate
+
+        // 2) For collapsible placements, allow fallback to ADAPTIVE banners
+        if (requestedType == BannerAdType.COLLAPSIBLE_TOP || requestedType == BannerAdType.COLLAPSIBLE_BOTTOM) {
+            val adaptiveCandidate = entries.firstOrNull { (key, info) ->
+                if (!baseFilter(key, info)) return@firstOrNull false
+                val candidateType = adConfigMap[key]?.bannerAdType ?: return@firstOrNull false
+                candidateType == BannerAdType.ADAPTIVE
+            }?.first
+
+            if (adaptiveCandidate != null) return adaptiveCandidate
+        }
+
+        // 3) No compatible reusable banner found
+        return null
     }
 }

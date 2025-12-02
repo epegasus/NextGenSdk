@@ -62,9 +62,9 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
     private fun showBanner() {
         val act = activity ?: return
         if (isAdded.not()) return
-        diComponent.bannerAdsManager.pollBannerAd(key = BannerAdKey.ENTRANCE)?.let {
+        /*diComponent.bannerAdsManager.pollBannerAd(key = BannerAdKey.ENTRANCE)?.let {
             binding.flBanner.addCleanView(it.getView(act))
-        }
+        }*/
     }
 
     private fun navigateScreen() {
