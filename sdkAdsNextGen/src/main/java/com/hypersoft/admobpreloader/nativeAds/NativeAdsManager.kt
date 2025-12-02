@@ -2,6 +2,7 @@ package com.hypersoft.admobpreloader.nativeAds
 
 import android.content.res.Resources
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdPreloader
 import com.hypersoft.admobpreloader.R
 import com.hypersoft.admobpreloader.nativeAds.callbacks.NativeOnLoadCallback
 import com.hypersoft.admobpreloader.nativeAds.callbacks.NativeOnShowCallback
@@ -18,11 +19,11 @@ import com.hypersoft.core.storage.SharedPreferencesDataSource
 /**
  * Top-level manager for Native Ads, mirroring InterstitialAdsManager.
  *
- * Responsibilities:
- *  - Validate (premium, internet, remote flag, adUnit empty)
- *  - Map NativeAdKey -> AdConfig
- *  - (Future) Enforce marketing policies: canShare / canReuse / single-shot vs buffer
- *  - Delegate to PreloadEngine / ShowEngine
+     * Responsibilities:
+     *  - Validate (premium, internet, remote flag, adUnit empty)
+     *  - Map NativeAdKey -> AdConfig
+     *  - Enforce marketing policies: canShare / canReuse / single-shot vs buffer
+     *  - Delegate to PreloadEngine / ShowEngine
  *
  * Public API:
  *  @see loadNativeAd(key, listener)
@@ -52,14 +53,14 @@ class NativeAdsManager internal constructor(
                 isRemoteEnabled = sharedPrefs.rcNativeOnBoarding != 0,
                 bufferSize = null,
                 canShare = false,
-                canReuse = true
+                canReuse = false
             ),
             NativeAdKey.DASHBOARD to AdConfig(
                 adUnitId = resources.getString(R.string.admob_native_home_id),
                 isRemoteEnabled = sharedPrefs.rcNativeHome != 0,
                 bufferSize = null,
                 canShare = false,
-                canReuse = false
+                canReuse = true
             ),
             NativeAdKey.FEATURE to AdConfig(
                 adUnitId = resources.getString(R.string.admob_native_feature_id),
@@ -118,6 +119,16 @@ class NativeAdsManager internal constructor(
         // register config for lookups
         registry.putInfo(key, AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize))
 
+        // Policy: If *any* ad (which is shareable) already loaded and available with no impression, prefer reuse.
+        // This mirrors the behaviour of InterstitialAdsManager.
+        val existingReusableKey = findReusableAdFor(key)
+        if (existingReusableKey != null) {
+            AdLogger.logDebug(key.value, "loadNativeAd", "Reusing available ad from ${existingReusableKey.value}")
+            // We already have an ad available, so we don't start another preload. Just signal success.
+            listener?.onResponse(true)
+            return
+        }
+
         AdLogger.logDebug(key.value, "loadNativeAd", "Requesting server for native ad...")
         preloadEngine.startPreload(
             key,
@@ -135,13 +146,27 @@ class NativeAdsManager internal constructor(
         key: NativeAdKey,
         showCallback: NativeOnShowCallback? = null
     ): NativeAd? {
-        val info = registry.getInfo(key) ?: run {
-            AdLogger.logError(key.value, "pollNativeAd", "Ad info not found for this key. Did you call loadNativeAd()?")
-            showCallback?.onAdFailedToShow()
-            return null
+        val info = registry.getInfo(key)
+
+        // First, try to show this key's own ad if available.
+        if (info != null && NativeAdPreloader.isAdAvailable(info.adUnitId)) {
+            return showEngine.pollAd(key, info.adUnitId, showCallback)
         }
 
-        return showEngine.pollAd(key, info.adUnitId, showCallback)
+        // If own ad is not available but this placement canReuse, try to find a reusable ad from another key.
+        val reusableKey = findReusableAdFor(key)
+        if (reusableKey != null) {
+            val reusableInfo = registry.getInfo(reusableKey)
+            val unit = reusableInfo?.adUnitId
+            if (unit != null && NativeAdPreloader.isAdAvailable(unit)) {
+                AdLogger.logDebug(key.value, "pollNativeAd", "Reusing available ad from ${reusableKey.value}")
+                return showEngine.pollAd(key, unit, showCallback)
+            }
+        }
+
+        AdLogger.logError(key.value, "pollNativeAd", "Ad info not found or no ad available for this key")
+        showCallback?.onAdFailedToShow()
+        return null
     }
 
     /**
@@ -162,5 +187,46 @@ class NativeAdsManager internal constructor(
         AdLogger.logDebug("", "clearAllNativeAds", "Clearing all native ads")
         registry.clearAll()
         preloadEngine.stopAll()
+    }
+
+    /**
+     * Helper: find any reusable ad key for the requested key, obeying canShare/canReuse flags.
+     */
+    private fun findReusableAdFor(requested: NativeAdKey): NativeAdKey? {
+        val requestedInfo = registry.getInfo(requested) ?: return null
+
+        // If this placement is not allowed to reuse others, bail out.
+        if (!requestedInfo.canReuse) return null
+
+        // Prefer same adUnitId if present and not the same key.
+        val requestedUnit = requestedInfo.adUnitId
+        val sameUnit = registry.findAdKeyByUnit(requestedUnit)
+        if (
+            sameUnit != null &&
+            sameUnit != requested
+        ) {
+            val sameInfo = registry.getInfo(sameUnit)
+            if (
+                sameInfo?.canShare == true &&
+                !registry.wasAdShown(requestedUnit) &&
+                registry.isPreloadActive(requestedUnit) &&
+                NativeAdPreloader.isAdAvailable(requestedUnit)
+            ) {
+                return sameUnit
+            }
+        }
+
+        // Fallback: any shareable, loaded, not-shown, active ad.
+        val found = adConfigMap.keys.mapNotNull { key ->
+            registry.getInfo(key)?.let { info -> key to info }
+        }.firstOrNull { (key, info) ->
+            key != requested &&
+                    info.canShare &&
+                    !registry.wasAdShown(info.adUnitId) &&
+                    registry.isPreloadActive(info.adUnitId) &&
+                    NativeAdPreloader.isAdAvailable(info.adUnitId)
+        }?.first
+
+        return found
     }
 }
