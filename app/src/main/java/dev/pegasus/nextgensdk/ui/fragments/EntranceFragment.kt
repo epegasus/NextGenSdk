@@ -41,7 +41,7 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
         // Preload native for Language screen ahead of time
         diComponent.nativeAdsManager.loadNativeAd(NativeAdKey.LANGUAGE)
 
-        // Preload banner for Entrance bottom placement
+        // Preload banner for Entrance bottom placement with adaptive size
         diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.ENTRANCE) { showBanner() }
     }
 

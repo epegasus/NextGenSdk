@@ -28,10 +28,10 @@ android {
             resValue("string", "admob_inter_exit_id", "ca-app-pub-3940256099942544/1033173712")
 
             resValue("string", "admob_native_language_id", "ca-app-pub-3940256099942544/2247696110")
-            resValue("string", "admob_native_on_boarding_id", "ca-app-pub-3940256099942544/22476961102")
-            resValue("string", "admob_native_home_id", "ca-app-pub-3940256099942544/22476961103")
-            resValue("string", "admob_native_feature_id", "ca-app-pub-3940256099942544/22476961104")
-            resValue("string", "admob_native_exit_id", "ca-app-pub-3940256099942544/22476961105")
+            resValue("string", "admob_native_on_boarding_id", "ca-app-pub-3940256099942544/2247696110")
+            resValue("string", "admob_native_home_id", "ca-app-pub-3940256099942544/2247696110")
+            resValue("string", "admob_native_feature_id", "ca-app-pub-3940256099942544/2247696110")
+            resValue("string", "admob_native_exit_id", "ca-app-pub-3940256099942544/2247696110")
 
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

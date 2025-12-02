@@ -1,6 +1,7 @@
 package com.hypersoft.admobpreloader.bannerAds
 
-import android.content.res.Resources
+import android.content.Context
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
 import com.hypersoft.admobpreloader.R
 import com.hypersoft.admobpreloader.bannerAds.callbacks.BannerOnLoadCallback
@@ -31,7 +32,7 @@ import com.hypersoft.core.storage.SharedPreferencesDataSource
  *  @see clearAllBannerAds()
  */
 class BannerAdsManager internal constructor(
-    private val resources: Resources,
+    private val context: Context,
     private val registry: AdRegistry,
     private val preloadEngine: PreloadEngine,
     private val showEngine: ShowEngine,
@@ -39,17 +40,25 @@ class BannerAdsManager internal constructor(
     private val sharedPrefs: SharedPreferencesDataSource
 ) {
 
+    private val adWidth: Int
+        get() {
+            val displayMetrics = context.resources.displayMetrics
+            val adWidthPixels = displayMetrics.widthPixels
+            val density = displayMetrics.density
+            return (adWidthPixels / density).toInt()
+        }
+
     private val adConfigMap: Map<BannerAdKey, AdConfig> by lazy {
         mapOf(
             BannerAdKey.ENTRANCE to AdConfig(
-                adUnitId = resources.getString(R.string.admob_banner_entrance_id),
+                adUnitId = context.getString(R.string.admob_banner_entrance_id),
                 isRemoteEnabled = sharedPrefs.rcBannerEntrance != 0,
                 bufferSize = null,
                 canShare = false,
                 canReuse = false
             ),
             BannerAdKey.ON_BOARDING to AdConfig(
-                adUnitId = resources.getString(R.string.admob_banner_on_boarding_id),
+                adUnitId = context.getString(R.string.admob_banner_on_boarding_id),
                 isRemoteEnabled = sharedPrefs.rcBannerOnBoarding != 0,
                 bufferSize = null,
                 canShare = false,
@@ -59,9 +68,17 @@ class BannerAdsManager internal constructor(
     }
 
     /**
-     * Preload a banner ad for the given placement key.
+     * Preload a banner ad for the given placement key, using default banner size.
      */
     fun loadBannerAd(key: BannerAdKey, listener: BannerOnLoadCallback? = null) {
+        val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth)
+        loadBannerAdInternal(key, adSize = adSize, listener = listener)
+    }
+
+    /**
+     * Internal common implementation for loading banner ads.
+     */
+    private fun loadBannerAdInternal(key: BannerAdKey, adSize: AdSize?, listener: BannerOnLoadCallback?) {
         val config = adConfigMap[key] ?: run {
             AdLogger.logError(key.value, "loadBannerAd", "Unknown key")
             listener?.onResponse(false)
@@ -96,12 +113,12 @@ class BannerAdsManager internal constructor(
         }
 
         // register config for lookups
-        registry.putInfo(key, AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize))
+        registry.putInfo(key, AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize, adSize))
 
         AdLogger.logDebug(key.value, "loadBannerAd", "Requesting server for banner ad...")
         preloadEngine.startPreload(
             key,
-            AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize),
+            AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize, adSize),
             listener
         )
     }

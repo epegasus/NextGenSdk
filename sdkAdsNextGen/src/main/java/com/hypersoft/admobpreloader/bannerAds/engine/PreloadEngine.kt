@@ -1,5 +1,6 @@
 package com.hypersoft.admobpreloader.bannerAds.engine
 
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdPreloader
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
@@ -43,10 +44,9 @@ internal class PreloadEngine(
         registry.markPreloadActive(adUnitId, true)
         val buffer = adInfo.bufferSize ?: 1
 
-        // Note: Banner size is determined at request creation time by the caller (AdSize, width). For now, we
-        // assume a standard banner size (or caller config) is baked into the request here as a simple placeholder.
-        // If you need adaptive sizes per-screen, consider passing AdSize via AdInfo in the future.
-        val request = BannerAdRequest.Builder(adUnitId).build()
+        // Use provided AdSize (e.g., adaptive) when available, otherwise fall back to standard BANNER.
+        val size = adInfo.adSize ?: AdSize.BANNER
+        val request = BannerAdRequest.Builder(adUnitId, size).build()
         val config = PreloadConfiguration(request, buffer)
 
         try {
@@ -58,11 +58,7 @@ internal class PreloadEngine(
                 }
 
                 override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
-                    AdLogger.logError(
-                        key.value,
-                        "loadBannerAd",
-                        "onAdFailedToPreload: adUnitId: $preloadId, adMessage: ${adError.message}"
-                    )
+                    AdLogger.logError(key.value, "loadBannerAd", "onAdFailedToPreload: adUnitId: $preloadId, adMessage: ${adError.message}")
                     registry.markPreloadActive(adUnitId, false)
                     if (adInfo.bufferSize == null) {
                         registry.removePreload(adUnitId)
@@ -105,5 +101,3 @@ internal class PreloadEngine(
         registry.clearAll()
     }
 }
-
-

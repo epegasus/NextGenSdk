@@ -1,5 +1,7 @@
 package com.hypersoft.admobpreloader.bannerAds.model
 
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
+
 /**
  * Runtime info for a banner placement, stored in the registry.
  */
@@ -7,5 +9,6 @@ data class AdInfo(
     val adUnitId: String,
     val canShare: Boolean,
     val canReuse: Boolean,
-    val bufferSize: Int?
+    val bufferSize: Int?,
+    val adSize: AdSize?      // null => use default BANNER; non-null => use this size (e.g., adaptive)
 )

@@ -2,7 +2,6 @@ package com.hypersoft.admobpreloader.bannerAds.engine
 
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdEventCallback
-import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdLoadResult
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdPreloader
 import com.google.android.libraries.ads.mobile.sdk.common.AdValue
 import com.hypersoft.admobpreloader.bannerAds.callbacks.BannerOnShowCallback
@@ -27,23 +26,22 @@ internal class ShowEngine(
      * Returns the BannerAd so that the caller can add its view to the layout.
      */
     fun pollAd(key: BannerAdKey, adUnitId: String, listener: BannerOnShowCallback?): BannerAd? {
-        val result: BannerAdLoadResult? = try {
+        val bannerAd: BannerAd? = try {
             BannerAdPreloader.pollAd(adUnitId)
         } catch (e: Exception) {
             AdLogger.logError(key.value, "pollBannerAd", "Exception polling ad: ${e.message}")
             null
         }
 
-        val bannerAd = (result as? BannerAdLoadResult.BannerAdSuccess)?.ad
         if (bannerAd == null) {
             AdLogger.logError(key.value, "pollBannerAd", "no ad available")
             MainDispatcher.run { listener?.onAdFailedToShow() }
             return null
         }
 
-        AdLogger.logDebug(key.value, "pollBannerAd", "got ad, responseInfo=${bannerAd.getResponseInfo().responseId}")
+        AdLogger.logDebug(key.value, "pollBannerAd", "got ad")
 
-        bannerAd.adEventCallback = object : BannerAdEventCallback() {
+        bannerAd.adEventCallback = object : BannerAdEventCallback {
             override fun onAdImpression() {
                 AdLogger.logVerbose(key.value, "pollBannerAd", "onAdImpression")
                 registry.markAdShown(adUnitId)
@@ -64,12 +62,10 @@ internal class ShowEngine(
             }
 
             override fun onAdPaid(value: AdValue) {
-                MainDispatcher.run { listener?.onAdPaid(value) }
+                //MainDispatcher.run { listener?.onAdPaid(value) }
             }
         }
 
         return bannerAd
     }
 }
-
-

@@ -16,7 +16,7 @@ val bannerAdsModule = module {
     single { ShowEngine(get(), get()) }
     single {
         BannerAdsManager(
-            resources = androidContext().resources,
+            context = androidContext(),
             registry = get(),
             preloadEngine = get(),
             showEngine = get(),
