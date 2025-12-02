@@ -19,7 +19,7 @@
             app:layout_constraintHeight_min="120dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:background="@color/black" />
+            tools:background="@android:color/black" />
 
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:id="@+id/adAppIcon"
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="10dp"
-            android:background="@color/black"
+            android:background="@android:color/black"
             android:includeFontPadding="false"
             android:paddingHorizontal="4dp"
             android:paddingVertical="2dp"

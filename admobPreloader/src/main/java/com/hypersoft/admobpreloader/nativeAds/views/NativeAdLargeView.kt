@@ -1,4 +1,4 @@
-package dev.pegasus.nextgensdk.ads.nativeAds.views
+package com.hypersoft.admobpreloader.nativeAds.views
 
 import android.content.Context
 import android.util.AttributeSet
@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
-import dev.pegasus.nextgensdk.databinding.LayoutNativeLargeBinding
+import com.hypersoft.admobpreloader.databinding.LayoutNativeLargeBinding
 
 class NativeAdLargeView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : FrameLayout(context, attrs, defStyleAttr) {
 
