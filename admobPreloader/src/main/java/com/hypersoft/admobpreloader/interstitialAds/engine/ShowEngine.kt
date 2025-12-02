@@ -56,7 +56,7 @@ internal class ShowEngine(
             }
 
             override fun onAdClicked() {
-                AdLogger.logDebug(key.value, "showInterstitialAd", "onAdClicked: called")
+                //AdLogger.logDebug(key.value, "showInterstitialAd", "onAdClicked: called")
                 MainDispatcher.run { listener?.onAdClicked(adUnitId) }
             }
 

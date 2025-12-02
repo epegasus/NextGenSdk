@@ -58,12 +58,12 @@ internal class ShowEngine(
             }
 
             override fun onAdClicked() {
-                AdLogger.logDebug(key.value, "pollNativeAd", "onAdClicked")
+                //AdLogger.logDebug(key.value, "pollNativeAd", "onAdClicked")
                 MainDispatcher.run { listener?.onAdClicked() }
             }
 
             override fun onAdPaid(value: AdValue) {
-                AdLogger.logDebug(key.value, "pollNativeAd", "onPaid ${value.valueMicros} ${value.currencyCode}")
+                //AdLogger.logDebug(key.value, "pollNativeAd", "onPaid ${value.valueMicros} ${value.currencyCode}")
             }
         }
 
