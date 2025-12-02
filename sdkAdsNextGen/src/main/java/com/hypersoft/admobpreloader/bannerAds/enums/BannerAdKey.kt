@@ -8,9 +8,4 @@ package com.hypersoft.admobpreloader.bannerAds.enums
 enum class BannerAdKey(val value: String) {
     ENTRANCE("entrance_banner"),
     ON_BOARDING("on_boarding_banner"),
-    DASHBOARD("dashboard_banner"),
-    FEATURE("feature_banner"),
-    EXIT("exit_banner")
 }
-
-

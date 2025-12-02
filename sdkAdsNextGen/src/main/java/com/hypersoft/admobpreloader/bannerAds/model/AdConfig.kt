@@ -13,5 +13,3 @@ data class AdConfig(
     val canShare: Boolean,      // allow other screens to show it
     val canReuse: Boolean       // allow reuse (i.e., use other ads if this not available)
 )
-
-

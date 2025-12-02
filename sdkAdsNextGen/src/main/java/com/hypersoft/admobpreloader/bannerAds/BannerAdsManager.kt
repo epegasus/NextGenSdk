@@ -2,7 +2,6 @@ package com.hypersoft.admobpreloader.bannerAds
 
 import android.content.res.Resources
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
-import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdPreloader
 import com.hypersoft.admobpreloader.R
 import com.hypersoft.admobpreloader.bannerAds.callbacks.BannerOnLoadCallback
 import com.hypersoft.admobpreloader.bannerAds.callbacks.BannerOnShowCallback
@@ -52,27 +51,6 @@ class BannerAdsManager internal constructor(
             BannerAdKey.ON_BOARDING to AdConfig(
                 adUnitId = resources.getString(R.string.admob_banner_on_boarding_id),
                 isRemoteEnabled = sharedPrefs.rcBannerOnBoarding != 0,
-                bufferSize = null,
-                canShare = false,
-                canReuse = false
-            ),
-            BannerAdKey.DASHBOARD to AdConfig(
-                adUnitId = resources.getString(R.string.admob_banner_dashboard_id),
-                isRemoteEnabled = sharedPrefs.rcBannerDashboard != 0,
-                bufferSize = null,
-                canShare = false,
-                canReuse = false
-            ),
-            BannerAdKey.FEATURE to AdConfig(
-                adUnitId = resources.getString(R.string.admob_banner_feature_id),
-                isRemoteEnabled = sharedPrefs.rcBannerFeature != 0,
-                bufferSize = null,
-                canShare = false,
-                canReuse = false
-            ),
-            BannerAdKey.EXIT to AdConfig(
-                adUnitId = resources.getString(R.string.admob_banner_exit_id),
-                isRemoteEnabled = sharedPrefs.rcBannerExit != 0,
                 bufferSize = null,
                 canShare = false,
                 canReuse = false
@@ -165,5 +143,3 @@ class BannerAdsManager internal constructor(
         preloadEngine.stopAll()
     }
 }
-
-

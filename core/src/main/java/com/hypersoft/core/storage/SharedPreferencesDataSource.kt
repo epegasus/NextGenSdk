@@ -27,7 +27,8 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     val appOpen = "appOpen"
     val appOpenSplash = "appOpenSplash"
 
-    val bannerHome = "bannerHome"
+    val bannerEntrance = "bannerEntrance"
+    val bannerOnBoarding = "bannerOnBoarding"
 
     val interEntrance = "interEntrance"
     val interOnBoarding = "interOnBoarding"
@@ -59,9 +60,13 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     /**
      *  ------------------- Banner Ads -------------------
      */
-    var rcBannerHome: Int
-        get() = sharedPreferences.getInt(bannerHome, 0)
-        set(value) = sharedPreferences.edit { putInt(bannerHome, value) }
+    var rcBannerEntrance: Int
+        get() = sharedPreferences.getInt(bannerEntrance, 1)
+        set(value) = sharedPreferences.edit { putInt(bannerEntrance, value) }
+
+    var rcBannerOnBoarding: Int
+        get() = sharedPreferences.getInt(bannerOnBoarding, 1)
+        set(value) = sharedPreferences.edit { putInt(bannerOnBoarding, value) }
 
     /**
      *  ------------------- Interstitial Ads -------------------

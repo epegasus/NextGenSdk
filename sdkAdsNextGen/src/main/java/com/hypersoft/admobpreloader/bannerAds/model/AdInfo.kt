@@ -9,5 +9,3 @@ data class AdInfo(
     val canReuse: Boolean,
     val bufferSize: Int?
 )
-
-
