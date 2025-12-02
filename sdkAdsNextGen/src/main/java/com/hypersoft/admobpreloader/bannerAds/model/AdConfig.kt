@@ -1,5 +1,7 @@
 package com.hypersoft.admobpreloader.bannerAds.model
 
+import com.hypersoft.admobpreloader.bannerAds.enums.BannerAdType
+
 /**
  * Static configuration for a banner placement.
  *
@@ -9,6 +11,7 @@ package com.hypersoft.admobpreloader.bannerAds.model
 data class AdConfig(
     val adUnitId: String,
     val isRemoteEnabled: Boolean,
+    val bannerAdType: BannerAdType,
     val bufferSize: Int?,       // null => single-shot; >0 => pass to Preloader
     val canShare: Boolean,      // allow other screens to show it
     val canReuse: Boolean       // allow reuse (i.e., use other ads if this not available)

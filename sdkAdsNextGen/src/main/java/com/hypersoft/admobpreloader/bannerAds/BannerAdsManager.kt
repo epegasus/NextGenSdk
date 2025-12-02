@@ -9,6 +9,7 @@ import com.hypersoft.admobpreloader.bannerAds.callbacks.BannerOnShowCallback
 import com.hypersoft.admobpreloader.bannerAds.engine.PreloadEngine
 import com.hypersoft.admobpreloader.bannerAds.engine.ShowEngine
 import com.hypersoft.admobpreloader.bannerAds.enums.BannerAdKey
+import com.hypersoft.admobpreloader.bannerAds.enums.BannerAdType
 import com.hypersoft.admobpreloader.bannerAds.model.AdConfig
 import com.hypersoft.admobpreloader.bannerAds.model.AdInfo
 import com.hypersoft.admobpreloader.bannerAds.storage.AdRegistry
@@ -53,6 +54,7 @@ class BannerAdsManager internal constructor(
             BannerAdKey.ENTRANCE to AdConfig(
                 adUnitId = context.getString(R.string.admob_banner_entrance_id),
                 isRemoteEnabled = sharedPrefs.rcBannerEntrance != 0,
+                bannerAdType = BannerAdType.COLLAPSIBLE_BOTTOM,
                 bufferSize = null,
                 canShare = false,
                 canReuse = false
@@ -60,6 +62,7 @@ class BannerAdsManager internal constructor(
             BannerAdKey.ON_BOARDING to AdConfig(
                 adUnitId = context.getString(R.string.admob_banner_on_boarding_id),
                 isRemoteEnabled = sharedPrefs.rcBannerOnBoarding != 0,
+                bannerAdType = BannerAdType.COLLAPSIBLE_TOP,
                 bufferSize = null,
                 canShare = false,
                 canReuse = false
@@ -72,13 +75,6 @@ class BannerAdsManager internal constructor(
      */
     fun loadBannerAd(key: BannerAdKey, listener: BannerOnLoadCallback? = null) {
         val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth)
-        loadBannerAdInternal(key, adSize = adSize, listener = listener)
-    }
-
-    /**
-     * Internal common implementation for loading banner ads.
-     */
-    private fun loadBannerAdInternal(key: BannerAdKey, adSize: AdSize?, listener: BannerOnLoadCallback?) {
         val config = adConfigMap[key] ?: run {
             AdLogger.logError(key.value, "loadBannerAd", "Unknown key")
             listener?.onResponse(false)
