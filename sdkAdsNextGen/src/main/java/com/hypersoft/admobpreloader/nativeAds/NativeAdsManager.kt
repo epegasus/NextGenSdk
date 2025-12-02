@@ -48,16 +48,16 @@ class NativeAdsManager internal constructor(
                 canReuse = true
             ),
             NativeAdKey.ON_BOARDING to AdConfig(
-                adUnitId = resources.getString(R.string.admob_native_language_id),
+                adUnitId = resources.getString(R.string.admob_native_on_boarding_id),
                 isRemoteEnabled = sharedPrefs.rcNativeOnBoarding != 0,
                 bufferSize = null,
                 canShare = false,
                 canReuse = false
             ),
             NativeAdKey.DASHBOARD to AdConfig(
-                adUnitId = resources.getString(R.string.admob_native_language_id),
+                adUnitId = resources.getString(R.string.admob_native_home_id),
                 isRemoteEnabled = sharedPrefs.rcNativeHome != 0,
-                bufferSize = null,      // dashboard can benefit from 1 buffered ad
+                bufferSize = null,
                 canShare = false,
                 canReuse = false
             ),

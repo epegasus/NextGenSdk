@@ -26,9 +26,9 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
 
     private fun showNativeAd() {
         if (isAdded.not()) return
-        diComponent.nativeAdsManager.pollNativeAd(key = NativeAdKey.LANGUAGE, showCallback = null)?.let {
+        /*diComponent.nativeAdsManager.pollNativeAd(key = NativeAdKey.LANGUAGE, showCallback = null)?.let {
             binding.nativeAdView.setNativeAd(it)
-        }
+        }*/
     }
 
     private fun checkInterstitialAd() {

@@ -33,7 +33,7 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
     private fun loadAd() {
         diComponent.interstitialAdsManager.loadInterstitialAd(InterAdKey.ENTRANCE, object : InterstitialLoadListener {
             override fun onLoaded(key: String) = onAdResponse("Ad loaded: $key")
-            override fun onFailed(key: String, message: String) = onAdResponse("Ad failed to load: $message")
+            override fun onFailed(key: String, message: String) = onAdResponse("Ad failed to load: ${message.take(50)}")
         })
 
         // Preload native for Language screen ahead of time
