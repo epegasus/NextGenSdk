@@ -10,17 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
-            android:id="@+id/adMediaView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintDimensionRatio="h,2.2:1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_min="120dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:background="@android:color/black" />
-
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:id="@+id/adAppIcon"
             android:layout_width="0dp"
@@ -52,7 +41,7 @@
             android:textStyle="bold"
             android:visibility="gone"
             app:layout_constraintStart_toEndOf="@+id/adAppIcon"
-            app:layout_constraintTop_toBottomOf="@+id/adMediaView"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText,SmallSp"
             tools:visibility="visible" />
 
