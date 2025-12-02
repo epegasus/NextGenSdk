@@ -1,11 +1,11 @@
 package dev.pegasus.nextgensdk.ui.fragments
 
 import androidx.navigation.fragment.findNavController
+import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
+import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.databinding.FragmentLanguageBinding
-import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.ads.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
+import dev.pegasus.nextgensdk.databinding.FragmentLanguageBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
 class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageBinding::inflate) {
@@ -32,9 +32,9 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(FragmentLanguageB
     }
 
     private fun checkInterstitialAd() {
-        diComponent.interstitialAdsConfig.showInterstitialAd(activity, InterAdKey.ENTRANCE, object : InterstitialOnShowCallBack {
-            override fun onAdFailedToShow() = navigateScreen()
-            override fun onAdImpressionDelayed() = navigateScreen()
+        diComponent.interstitialAdsManager.showInterstitialAd(activity, InterAdKey.ENTRANCE, object : InterstitialShowListener {
+            override fun onAdFailedToShow(key: String, reason: String) = navigateScreen()
+            override fun onAdImpressionDelayed(key: String) = navigateScreen()
         })
     }
 

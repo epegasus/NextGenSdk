@@ -13,11 +13,11 @@ import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdEventCallbac
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoadResult.NativeAdSuccess
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdPreloader
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest
+import com.hypersoft.core.network.InternetManager
+import com.hypersoft.core.storage.SharedPreferencesDataSource
 import dev.pegasus.nextgensdk.ads.nativeAds.callbacks.NativeOnLoadCallback
 import dev.pegasus.nextgensdk.ads.nativeAds.callbacks.NativeOnShowCallback
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
-import dev.pegasus.nextgensdk.utils.network.InternetManager
-import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class NativeAdsManager(

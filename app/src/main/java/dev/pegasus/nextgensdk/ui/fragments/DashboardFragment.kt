@@ -3,11 +3,11 @@ package dev.pegasus.nextgensdk.ui.fragments
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
+import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
+import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.databinding.FragmentDashboardBinding
-import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.ads.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
+import dev.pegasus.nextgensdk.databinding.FragmentDashboardBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboardBinding::inflate) {
@@ -43,9 +43,9 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
     }
 
     private fun loadInterstitialAd() {
-        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.DASHBOARD)
-        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.BOTTOM_NAVIGATION)
-        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.EXIT)
+        diComponent.interstitialAdsManager.loadInterstitialAd(InterAdKey.DASHBOARD)
+        diComponent.interstitialAdsManager.loadInterstitialAd(InterAdKey.BOTTOM_NAVIGATION)
+        diComponent.interstitialAdsManager.loadInterstitialAd(InterAdKey.EXIT)
     }
 
     private fun loadNative() {
@@ -60,16 +60,16 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
     }
 
     private fun checkInterstitialAd(caseType: Int) {
-        diComponent.interstitialAdsConfig.showInterstitialAd(activity, InterAdKey.DASHBOARD, object : InterstitialOnShowCallBack {
-            override fun onAdFailedToShow() = navigateScreen(caseType)
-            override fun onAdImpressionDelayed() = navigateScreen(caseType)
+        diComponent.interstitialAdsManager.showInterstitialAd(activity, InterAdKey.DASHBOARD, object : InterstitialShowListener {
+            override fun onAdFailedToShow(key: String, reason: String) = navigateScreen(caseType)
+            override fun onAdImpressionDelayed(key: String) = navigateScreen(caseType)
         })
     }
 
     private fun checkInterstitialBottomNavigationAd(caseType: Int) {
-        diComponent.interstitialAdsConfig.showInterstitialAd(activity, InterAdKey.BOTTOM_NAVIGATION, object : InterstitialOnShowCallBack {
-            override fun onAdFailedToShow() {}
-            override fun onAdImpressionDelayed() {}
+        diComponent.interstitialAdsManager.showInterstitialAd(activity, InterAdKey.BOTTOM_NAVIGATION, object : InterstitialShowListener {
+            override fun onAdFailedToShow(key: String, reason: String) {}
+            override fun onAdImpressionDelayed(key: String) {}
         })
     }
 
