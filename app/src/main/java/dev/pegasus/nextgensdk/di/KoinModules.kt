@@ -2,6 +2,10 @@ package dev.pegasus.nextgensdk.di
 
 import android.content.Context
 import android.net.ConnectivityManager
+import dev.pegasus.nextgensdk.ads.inter.InterstitialAdsManager
+import dev.pegasus.nextgensdk.ads.inter.engine.PreloadEngine
+import dev.pegasus.nextgensdk.ads.inter.engine.ShowEngine
+import dev.pegasus.nextgensdk.ads.inter.storage.AdRegistry
 import dev.pegasus.nextgensdk.ads.interstitialAds.InterstitialAdsConfig
 import dev.pegasus.nextgensdk.ads.nativeAds.NativeAdsConfig
 import dev.pegasus.nextgensdk.utils.network.InternetManager
@@ -23,6 +27,20 @@ private val managerModule = module {
 }
 
 private val adsModule = module {
+    single { AdRegistry() }
+    single { PreloadEngine(get()) }
+    single { ShowEngine(get(), get()) }
+
+    single {
+        InterstitialAdsManager(
+            resources = androidContext().resources,
+            registry = get(),
+            preloadEngine = get(),
+            showEngine = get(),
+            internetManager = get(),
+            sharedPrefs = get(),
+        )
+    }
     single {
         InterstitialAdsConfig(
             resources = androidContext().resources,

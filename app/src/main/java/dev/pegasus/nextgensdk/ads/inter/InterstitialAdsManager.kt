@@ -29,7 +29,7 @@ import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
  *  - destroyAd(key)
  *  - destroyAllAds()
  */
-class InterstitialAdPolicyManager private constructor(
+class InterstitialAdsManager internal constructor(
     private val resources: Resources,
     private val registry: AdRegistry,
     private val preloadEngine: PreloadEngine,
@@ -131,13 +131,17 @@ class InterstitialAdPolicyManager private constructor(
         preloadEngine.startPreload(AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize), listener)
     }
 
-    fun showAd(activity: Activity, key: InterAdKey, listener: InterstitialShowListener? = null) {
+    fun showAd(activity: Activity?, key: InterAdKey, listener: InterstitialShowListener? = null) {
         val config = adConfigMap[key] ?: run {
             listener?.onAdFailedToShow(key.value, "Unknown key")
             return
         }
 
         when {
+            activity == null -> {
+                listener?.onAdFailedToShow(key.value, "Activity Ref is null")
+                return
+            }
             sharedPrefs.isAppPurchased -> {
                 listener?.onAdFailedToShow(key.value, "Premium user")
                 return

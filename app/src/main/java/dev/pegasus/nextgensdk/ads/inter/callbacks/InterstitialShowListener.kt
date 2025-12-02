@@ -5,6 +5,6 @@ interface InterstitialShowListener {
     fun onAdImpression(key: String) {}
     fun onAdClicked(key: String) {}
     fun onAdDismissed(key: String) {}
-    fun onAdImpressionDelay(key: String) {}
+    fun onAdImpressionDelayed(key: String) {}
     fun onAdFailedToShow(key: String, reason: String) {}
 }

@@ -39,7 +39,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mbFeatureOne" />
 
-    <dev.pegasus.nextgensdk.nativeAds.views.NativeAdLargeView
+    <dev.pegasus.nextgensdk.ads.nativeAds.views.NativeAdLargeView
         android:id="@+id/nativeAdView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

@@ -39,7 +39,7 @@ internal class ShowEngine(
                 // mark impression and (if bufferSize == null) stop preloading for that unit
                 registry.markAdShown(adUnitId)
                 MainDispatcher.run { listener?.onAdImpression(adUnitId) }
-                MainDispatcher.run(300) { listener?.onAdImpressionDelay(adUnitId) }
+                MainDispatcher.run(300) { listener?.onAdImpressionDelayed(adUnitId) }
                 // if bufferSize is null, we should stop automatic reload
                 registry.findAdKeyByUnit(adUnitId)?.let { key ->
                     val info = registry.getInfo(key)

@@ -6,11 +6,11 @@ import android.util.Log
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.databinding.FragmentEntranceBinding
-import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnLoadCallBack
-import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.ads.interstitialAds.enums.InterAdKey
+import dev.pegasus.nextgensdk.ads.inter.callbacks.InterstitialLoadListener
+import dev.pegasus.nextgensdk.ads.inter.callbacks.InterstitialShowListener
+import dev.pegasus.nextgensdk.ads.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
+import dev.pegasus.nextgensdk.databinding.FragmentEntranceBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 import dev.pegasus.nextgensdk.utils.constants.Constants.TAG
 
@@ -31,10 +31,9 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
     }
 
     private fun loadAd() {
-        diComponent.interstitialAdsConfig.loadInterstitialAd(adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnLoadCallBack {
-            override fun onResponse(isLoaded: Boolean) {
-                onAdResponse("Ad loaded: $isLoaded")
-            }
+        diComponent.interstitialAdsManager.loadAd(InterAdKey.ENTRANCE, object : InterstitialLoadListener {
+            override fun onLoaded(key: String) = onAdResponse("Ad loaded: $key")
+            override fun onFailed(key: String, message: String) = onAdResponse("Ad failed to load: $message")
         })
 
         // Preload native for Language screen ahead of time
@@ -49,9 +48,9 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
     }
 
     fun showAd() {
-        diComponent.interstitialAdsConfig.showInterstitialAd(activity = activity, adType = InterAdKey.ENTRANCE, listener = object : InterstitialOnShowCallBack {
-            override fun onAdFailedToShow() = navigateScreen()
-            override fun onAdImpressionDelayed() = navigateScreen()
+        diComponent.interstitialAdsManager.showAd(activity, InterAdKey.ENTRANCE, object : InterstitialShowListener {
+            override fun onAdFailedToShow(key: String, reason: String) = navigateScreen()
+            override fun onAdImpressionDelayed(key: String) = navigateScreen()
         })
     }
 

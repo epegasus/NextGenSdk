@@ -1,9 +1,9 @@
 package dev.pegasus.nextgensdk.ui.fragments
 
 import androidx.navigation.fragment.findNavController
+import dev.pegasus.nextgensdk.ads.inter.callbacks.InterstitialShowListener
+import dev.pegasus.nextgensdk.ads.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.databinding.FragmentFeatureTwoBinding
-import dev.pegasus.nextgensdk.ads.interstitialAds.callbacks.InterstitialOnShowCallBack
-import dev.pegasus.nextgensdk.ads.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
 class FeatureTwoFragment : BaseFragment<FragmentFeatureTwoBinding>(FragmentFeatureTwoBinding::inflate) {
@@ -15,14 +15,19 @@ class FeatureTwoFragment : BaseFragment<FragmentFeatureTwoBinding>(FragmentFeatu
     }
 
     private fun loadAd() {
-        diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.BACK_PRESS)
+        diComponent.interstitialAdsManager.loadAd(InterAdKey.BACK_PRESS)
+        //diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.BACK_PRESS)
     }
 
     private fun checkInterstitialAd() {
-        diComponent.interstitialAdsConfig.showInterstitialAd(activity, InterAdKey.BACK_PRESS, object : InterstitialOnShowCallBack {
+        diComponent.interstitialAdsManager.showAd(activity, InterAdKey.BACK_PRESS, object : InterstitialShowListener {
+            override fun onAdFailedToShow(key: String, reason: String) = navigateBack()
+            override fun onAdImpressionDelayed(key: String) = navigateBack()
+        })
+        /*diComponent.interstitialAdsConfig.showInterstitialAd(activity, InterAdKey.BACK_PRESS, object : InterstitialOnShowCallBack {
             override fun onAdFailedToShow() = navigateBack()
             override fun onAdImpressionDelayed() = navigateBack()
-        })
+        })*/
     }
 
     private fun navigateBack() {
