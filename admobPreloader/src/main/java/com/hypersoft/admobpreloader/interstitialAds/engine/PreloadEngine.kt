@@ -60,7 +60,7 @@ internal class PreloadEngine(private val registry: AdRegistry) {
 
                 override fun onAdsExhausted(preloadId: String) {
                     // SDK-level events; we don't act specifically here, but could notify metrics
-                    AdLogger.logVerbose(key.value, "loadInterstitialAd", "onAdsExhausted: $preloadId")
+                    //AdLogger.logVerbose(key.value, "loadInterstitialAd", "onAdsExhausted: $preloadId")
                 }
             })
 

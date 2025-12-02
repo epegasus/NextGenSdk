@@ -49,7 +49,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
     }
 
     private fun loadNative() {
-        diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.DASHBOARD) { showNativeAd() }
+        //diComponent.nativeAdsConfig.loadNativeAd(NativeAdKey.DASHBOARD) { showNativeAd() }
     }
 
     private fun showNativeAd() {
