@@ -1,9 +1,11 @@
 package dev.pegasus.nextgensdk.ui.fragments
 
 import androidx.navigation.fragment.findNavController
+import com.hypersoft.admobpreloader.bannerAds.enums.BannerAdKey
 import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
 import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
 import com.hypersoft.admobpreloader.nativeAds.enums.NativeAdKey
+import com.hypersoft.admobpreloader.utils.addCleanView
 import dev.pegasus.nextgensdk.R
 import dev.pegasus.nextgensdk.databinding.FragmentOnBoardingBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
@@ -17,7 +19,7 @@ class OnBoardingFragment : BaseFragment<FragmentOnBoardingBinding>(FragmentOnBoa
     }
 
     private fun loadAds() {
-        //loadBanner()      Will do work later
+        loadBanner()
         loadNative()
         loadInterstitialAd()
     }
@@ -30,10 +32,22 @@ class OnBoardingFragment : BaseFragment<FragmentOnBoardingBinding>(FragmentOnBoa
         diComponent.nativeAdsManager.loadNativeAd(NativeAdKey.ON_BOARDING) { showNativeAd() }
     }
 
+    private fun loadBanner() {
+        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.ON_BOARDING) { showBanner() }
+    }
+
     private fun showNativeAd() {
         diComponent.nativeAdsManager.pollNativeAd(key = NativeAdKey.ON_BOARDING, showCallback = null)?.let {
             if (isAdded.not()) return
             binding.nativeAdView.setNativeAd(it)
+        }
+    }
+
+    private fun showBanner() {
+        val act = activity ?: return
+        if (isAdded.not()) return
+        diComponent.bannerAdsManager.pollBannerAd(key = BannerAdKey.ON_BOARDING)?.let {
+            binding.flBanner.addCleanView(it.getView(act))
         }
     }
 
