@@ -1,6 +1,6 @@
 package dev.pegasus.nextgensdk.di
 
-import dev.pegasus.nextgensdk.ads.inter.InterstitialAdsManager
+import com.hypersoft.admobpreloader.interstitialAds.InterstitialAdsManager
 import dev.pegasus.nextgensdk.ads.interstitialAds.InterstitialAdsConfig
 import dev.pegasus.nextgensdk.ads.nativeAds.NativeAdsConfig
 import org.koin.core.component.KoinComponent

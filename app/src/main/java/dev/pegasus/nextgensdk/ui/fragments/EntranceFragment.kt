@@ -6,9 +6,9 @@ import android.util.Log
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import dev.pegasus.nextgensdk.R
-import dev.pegasus.nextgensdk.ads.inter.callbacks.InterstitialLoadListener
-import dev.pegasus.nextgensdk.ads.inter.callbacks.InterstitialShowListener
-import dev.pegasus.nextgensdk.ads.inter.enums.InterAdKey
+import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialLoadListener
+import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
+import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.ads.nativeAds.enums.NativeAdKey
 import dev.pegasus.nextgensdk.databinding.FragmentEntranceBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment

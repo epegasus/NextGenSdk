@@ -1,8 +1,8 @@
 package dev.pegasus.nextgensdk.ui.fragments
 
 import androidx.navigation.fragment.findNavController
-import dev.pegasus.nextgensdk.ads.inter.callbacks.InterstitialShowListener
-import dev.pegasus.nextgensdk.ads.inter.enums.InterAdKey
+import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
+import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
 import dev.pegasus.nextgensdk.databinding.FragmentFeatureTwoBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 
