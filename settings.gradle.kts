@@ -21,5 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "NextGenSdk"
 include(":app")
-include(":admobPreloader")
+include(":sdkAdsNextGen")
 include(":core")

@@ -46,7 +46,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":admobPreloader"))
+    implementation(project(":sdkAdsNextGen"))
     implementation(project(":core"))
 
     // Android Core
