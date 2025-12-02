@@ -12,6 +12,7 @@ import dev.pegasus.nextgensdk.ads.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.ads.inter.model.AdConfig
 import dev.pegasus.nextgensdk.ads.inter.model.AdInfo
 import dev.pegasus.nextgensdk.ads.inter.storage.AdRegistry
+import dev.pegasus.nextgensdk.ads.inter.utils.AdLogger
 import dev.pegasus.nextgensdk.utils.network.InternetManager
 import dev.pegasus.nextgensdk.utils.storage.SharedPreferencesDataSource
 
@@ -86,8 +87,9 @@ class InterstitialAdsManager internal constructor(
     }
 
     // Public API - minimal & friendly
-    fun loadAd(key: InterAdKey, listener: InterstitialLoadListener? = null) {
+    fun loadInterstitialAd(key: InterAdKey, listener: InterstitialLoadListener? = null) {
         val config = adConfigMap[key] ?: run {
+            AdLogger.logError(key.value, "loadInterstitialAd", "Unknown key")
             listener?.onFailed(key.value, "Unknown key")
             return
         }
@@ -95,21 +97,25 @@ class InterstitialAdsManager internal constructor(
         // Validations
         when {
             !config.isRemoteEnabled -> {
+                AdLogger.logError(key.value, "loadInterstitialAd", "Remote config disabled")
                 listener?.onFailed(key.value, "Remote config disabled")
                 return
             }
 
             sharedPrefs.isAppPurchased -> {
+                AdLogger.logDebug(key.value, "loadInterstitialAd", "Premium user")
                 listener?.onFailed(key.value, "Premium user")
                 return
             }
 
             config.adUnitId.trim().isEmpty() -> {
+                AdLogger.logError(key.value, "loadInterstitialAd", "AdUnit id empty")
                 listener?.onFailed(key.value, "AdUnit id empty")
                 return
             }
 
             !internetManager.isInternetConnected -> {
+                AdLogger.logError(key.value, "loadInterstitialAd", "No internet")
                 listener?.onFailed(key.value, "No internet")
                 return
             }
@@ -123,36 +129,43 @@ class InterstitialAdsManager internal constructor(
         val existingReusableKey = findReusableAdFor(key)
         if (existingReusableKey != null) {
             // We won't start a new preload if there's an available ad: prefer to increase show-rate
+            AdLogger.logDebug(key.value, "loadInterstitialAd", "Reusing available ad from ${existingReusableKey.value}")
             listener?.onLoaded(adConfigMap[existingReusableKey]?.adUnitId ?: registry.getInfo(existingReusableKey)!!.adUnitId)
             return
         }
 
         // else start preload for this key's ad unit
-        preloadEngine.startPreload(AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize), listener)
+        AdLogger.logDebug(key.value, "loadInterstitialAd", "Requesting admob server for ad...")
+        preloadEngine.startPreload(key, AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize), listener)
     }
 
-    fun showAd(activity: Activity?, key: InterAdKey, listener: InterstitialShowListener? = null) {
+    fun showInterstitialAd(activity: Activity?, key: InterAdKey, listener: InterstitialShowListener? = null) {
         val config = adConfigMap[key] ?: run {
+            AdLogger.logError(key.value, "showInterstitialAd", "Unknown key")
             listener?.onAdFailedToShow(key.value, "Unknown key")
             return
         }
 
         when {
             activity == null -> {
+                AdLogger.logError(key.value, "showInterstitialAd", "Activity reference is null")
                 listener?.onAdFailedToShow(key.value, "Activity Ref is null")
                 return
             }
             sharedPrefs.isAppPurchased -> {
+                AdLogger.logDebug(key.value, "showInterstitialAd", "Premium user")
                 listener?.onAdFailedToShow(key.value, "Premium user")
                 return
             }
 
             config.adUnitId.trim().isEmpty() -> {
+                AdLogger.logError(key.value, "showInterstitialAd", "Ad id is empty")
                 listener?.onAdFailedToShow(key.value, "AdUnit id empty")
                 return
             }
 
             activity.isFinishing || activity.isDestroyed -> {
+                AdLogger.logError(key.value, "showInterstitialAd", "Activity is finishing or destroyed")
                 listener?.onAdFailedToShow(key.value, "Activity invalid")
                 return
             }
@@ -164,7 +177,8 @@ class InterstitialAdsManager internal constructor(
         val ownUnit = ownInfo?.adUnitId
 
         if (ownUnit != null && InterstitialAdPreloader.isAdAvailable(ownUnit)) {
-            showEngine.showAd(activity, ownUnit, listener)
+            AdLogger.logDebug(key.value, "showInterstitialAd", "Showing own ad")
+            showEngine.showAd(key, activity, ownUnit, listener)
             return
         }
 
@@ -173,21 +187,27 @@ class InterstitialAdsManager internal constructor(
         if (reusableKey != null) {
             val unit = registry.getInfo(reusableKey)?.adUnitId
             if (unit != null && InterstitialAdPreloader.isAdAvailable(unit)) {
-                showEngine.showAd(activity, unit, listener)
+                AdLogger.logDebug(key.value, "showInterstitialAd", "Reusing available ad from ${reusableKey.value}")
+                showEngine.showAd(key, activity, unit, listener)
                 return
             }
         }
 
         // No ad available — report failure
+        AdLogger.logError(key.value, "showInterstitialAd", "Interstitial is not available yet")
         listener?.onAdFailedToShow(key.value, "No available ad to show")
     }
 
-    fun destroyAd(key: InterAdKey) {
-        registry.getInfo(key)?.adUnitId?.let { preloadEngine.stopPreload(it) }
+    fun destroyInterstitialAd(key: InterAdKey) {
+        registry.getInfo(key)?.adUnitId?.let { 
+            AdLogger.logDebug(key.value, "destroyInterstitialAd", "Destroying ad")
+            preloadEngine.stopPreload(key, it) 
+        }
         registry.removeInfo(key)
     }
 
-    fun destroyAllAds() {
+    fun destroyAllInterstitials() {
+        AdLogger.logDebug("", "destroyAllInterstitials", "Destroying all ads")
         // stop all based on registry info
         registry.clearAll()
         preloadEngine.stopAll()

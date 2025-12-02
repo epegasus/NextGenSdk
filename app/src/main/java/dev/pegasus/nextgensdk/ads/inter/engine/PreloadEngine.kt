@@ -1,7 +1,6 @@
 package dev.pegasus.nextgensdk.ads.inter.engine
 
 
-import android.util.Log
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback
@@ -9,18 +8,17 @@ import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration
 import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPreloader
 import dev.pegasus.nextgensdk.ads.inter.callbacks.InterstitialLoadListener
+import dev.pegasus.nextgensdk.ads.inter.enums.InterAdKey
 import dev.pegasus.nextgensdk.ads.inter.model.AdInfo
 import dev.pegasus.nextgensdk.ads.inter.storage.AdRegistry
+import dev.pegasus.nextgensdk.ads.inter.utils.AdLogger
 import dev.pegasus.nextgensdk.ads.inter.utils.MainDispatcher
-import dev.pegasus.nextgensdk.utils.constants.Constants.TAG_ADS
 
 /**
  * Uses Next-Gen SDK's InterstitialAdPreloader and hands back load events.
  * Buffering is delegated to the SDK via PreloadConfiguration.bufferSize.
  */
-internal class PreloadEngine(
-    private val registry: AdRegistry
-) {
+internal class PreloadEngine(private val registry: AdRegistry) {
 
     /**
      * Start preloading an ad for a given AdInfo.
@@ -29,12 +27,12 @@ internal class PreloadEngine(
      *
      * If an adUnit is already preloading, we will not start duplicate preloader.
      */
-    fun startPreload(adInfo: AdInfo, listener: InterstitialLoadListener?) {
+    fun startPreload(key: InterAdKey, adInfo: AdInfo, listener: InterstitialLoadListener?) {
         val adUnitId = adInfo.adUnitId
 
         // avoid duplicate start
         if (registry.isPreloadActive(adUnitId)) {
-            Log.d(TAG_ADS, "PreloadEngine.startPreload: already active for $adUnitId")
+            AdLogger.logDebug(key.value, "loadInterstitialAd", "Ad is already loading for this ad unit: $adUnitId")
             MainDispatcher.run { listener?.onLoaded(adUnitId) } // if SDK already loaded, reply true
             return
         }
@@ -48,13 +46,13 @@ internal class PreloadEngine(
         try {
             val started = InterstitialAdPreloader.start(adUnitId, config, object : PreloadCallback {
                 override fun onAdPreloaded(preloadId: String, responseInfo: ResponseInfo) {
-                    Log.d(TAG_ADS, "onAdPreloaded: $preloadId")
+                    AdLogger.logInfo(key.value, "loadInterstitialAd", "onAdLoaded: adUnitId: $preloadId")
                     registry.markPreloadActive(adUnitId, true)
                     MainDispatcher.run { listener?.onLoaded(adUnitId) }
                 }
 
                 override fun onAdFailedToPreload(preloadId: String, adError: LoadAdError) {
-                    Log.e(TAG_ADS, "onAdFailedToPreload: $preloadId -> ${adError.message}")
+                    AdLogger.logError(key.value, "loadInterstitialAd", "onAdFailedToLoad: adUnitId: $preloadId, adMessage: ${adError.message}")
                     registry.markPreloadActive(adUnitId, false)
                     // if adInfo.bufferSize == null we might want to remove the preload (already not active)
                     MainDispatcher.run { listener?.onFailed(adUnitId, adError.message) }
@@ -62,19 +60,21 @@ internal class PreloadEngine(
 
                 override fun onAdsExhausted(preloadId: String) {
                     // SDK-level events; we don't act specifically here, but could notify metrics
-                    Log.v(TAG_ADS, "onAdsExhausted: $preloadId")
+                    AdLogger.logVerbose(key.value, "loadInterstitialAd", "onAdsExhausted: $preloadId")
                 }
             })
 
             if (!started) {
                 // Another preloader for same id is already in place. Mark as active and notify.
-                Log.d(TAG_ADS, "InterstitialAdPreloader.start returned false (id already in use): $adUnitId")
+                AdLogger.logDebug(key.value, "loadInterstitialAd", "AdUnitId is already in use")
                 registry.markPreloadActive(adUnitId, true)
                 MainDispatcher.run { listener?.onLoaded(adUnitId) }
+            } else {
+                registry.markPreloadActive(adUnitId, true)
             }
         } catch (e: Exception) {
             registry.markPreloadActive(adUnitId, false)
-            Log.e(TAG_ADS, "PreloadEngine.startPreload exception: ${e.message}")
+            AdLogger.logError(key.value, "loadInterstitialAd", "Exception: ${e.message}")
             MainDispatcher.run { listener?.onFailed(adUnitId, e.message ?: "Exception") }
         }
     }
@@ -82,11 +82,11 @@ internal class PreloadEngine(
     /**
      * Stop preloading/destroy preloader for a given unit id.
      */
-    fun stopPreload(adUnitId: String) {
+    fun stopPreload(key: InterAdKey, adUnitId: String) {
         try {
             InterstitialAdPreloader.destroy(adUnitId)
         } catch (e: Exception) {
-            Log.e(TAG_ADS, "PreloadEngine.stopPreload exception: ${e.message}")
+            AdLogger.logError(key.value, "stopPreloading", "Exception: ${e.message}")
         } finally {
             registry.removePreload(adUnitId)
         }
@@ -94,6 +94,7 @@ internal class PreloadEngine(
 
     fun stopAll() {
         // Not a direct SDK call for listing preloads; we iterate known registry entries.
+        // Note: This is called from destroyAllAds, which already logs
         registry.clearAll()
     }
 }

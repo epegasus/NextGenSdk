@@ -15,12 +15,12 @@ class FeatureTwoFragment : BaseFragment<FragmentFeatureTwoBinding>(FragmentFeatu
     }
 
     private fun loadAd() {
-        diComponent.interstitialAdsManager.loadAd(InterAdKey.BACK_PRESS)
+        diComponent.interstitialAdsManager.loadInterstitialAd(InterAdKey.BACK_PRESS)
         //diComponent.interstitialAdsConfig.loadInterstitialAd(InterAdKey.BACK_PRESS)
     }
 
     private fun checkInterstitialAd() {
-        diComponent.interstitialAdsManager.showAd(activity, InterAdKey.BACK_PRESS, object : InterstitialShowListener {
+        diComponent.interstitialAdsManager.showInterstitialAd(activity, InterAdKey.BACK_PRESS, object : InterstitialShowListener {
             override fun onAdFailedToShow(key: String, reason: String) = navigateBack()
             override fun onAdImpressionDelayed(key: String) = navigateBack()
         })

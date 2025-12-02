@@ -31,7 +31,7 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
     }
 
     private fun loadAd() {
-        diComponent.interstitialAdsManager.loadAd(InterAdKey.ENTRANCE, object : InterstitialLoadListener {
+        diComponent.interstitialAdsManager.loadInterstitialAd(InterAdKey.ENTRANCE, object : InterstitialLoadListener {
             override fun onLoaded(key: String) = onAdResponse("Ad loaded: $key")
             override fun onFailed(key: String, message: String) = onAdResponse("Ad failed to load: $message")
         })
@@ -48,7 +48,7 @@ class EntranceFragment : BaseFragment<FragmentEntranceBinding>(FragmentEntranceB
     }
 
     fun showAd() {
-        diComponent.interstitialAdsManager.showAd(activity, InterAdKey.ENTRANCE, object : InterstitialShowListener {
+        diComponent.interstitialAdsManager.showInterstitialAd(activity, InterAdKey.ENTRANCE, object : InterstitialShowListener {
             override fun onAdFailedToShow(key: String, reason: String) = navigateScreen()
             override fun onAdImpressionDelayed(key: String) = navigateScreen()
         })
