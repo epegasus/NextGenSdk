@@ -1,6 +1,7 @@
 package com.hypersoft.admobpreloader.bannerAds
 
 import android.content.Context
+import android.os.Bundle
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
 import com.hypersoft.admobpreloader.R
@@ -56,7 +57,7 @@ class BannerAdsManager internal constructor(
                 isRemoteEnabled = sharedPrefs.rcBannerEntrance != 0,
                 bannerAdType = BannerAdType.COLLAPSIBLE_BOTTOM,
                 bufferSize = null,
-                canShare = false,
+                canShare = true,
                 canReuse = false
             ),
             BannerAdKey.ON_BOARDING to AdConfig(
@@ -65,16 +66,21 @@ class BannerAdsManager internal constructor(
                 bannerAdType = BannerAdType.COLLAPSIBLE_TOP,
                 bufferSize = null,
                 canShare = false,
-                canReuse = false
+                canReuse = true
             )
         )
     }
 
     /**
-     * Preload a banner ad for the given placement key, using default banner size.
+     * Preload a banner ad for the given placement key.
+     *
+     * The actual AdSize / behavior is derived from the placement's BannerAdType:
+     *  - ADAPTIVE          -> anchored adaptive banner based on device width
+     *  - MEDIUM_RECTANGLE  -> AdSize.MEDIUM_RECTANGLE
+     *  - COLLAPSIBLE_TOP   -> anchored adaptive + "collapsible=top" extras
+     *  - COLLAPSIBLE_BOTTOM-> anchored adaptive + "collapsible=bottom" extras
      */
     fun loadBannerAd(key: BannerAdKey, listener: BannerOnLoadCallback? = null) {
-        val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth)
         val config = adConfigMap[key] ?: run {
             AdLogger.logError(key.value, "loadBannerAd", "Unknown key")
             listener?.onResponse(false)
@@ -108,13 +114,30 @@ class BannerAdsManager internal constructor(
             }
         }
 
+        // Derive AdSize + extras based on BannerAdType
+        val (adSize, extras) = when (config.bannerAdType) {
+            BannerAdType.ADAPTIVE -> AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth) to null
+            BannerAdType.MEDIUM_RECTANGLE -> AdSize.MEDIUM_RECTANGLE to null
+            BannerAdType.COLLAPSIBLE_TOP -> {
+                val size = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth)
+                val bundle = Bundle().apply { putString("collapsible", "top") }
+                size to bundle
+            }
+
+            BannerAdType.COLLAPSIBLE_BOTTOM -> {
+                val size = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth)
+                val bundle = Bundle().apply { putString("collapsible", "bottom") }
+                size to bundle
+            }
+        }
+
         // register config for lookups
-        registry.putInfo(key, AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize, adSize))
+        registry.putInfo(key, AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize, adSize, extras))
 
         AdLogger.logDebug(key.value, "loadBannerAd", "Requesting server for banner ad...")
         preloadEngine.startPreload(
             key,
-            AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize, adSize),
+            AdInfo(config.adUnitId, config.canShare, config.canReuse, config.bufferSize, adSize, extras),
             listener
         )
     }

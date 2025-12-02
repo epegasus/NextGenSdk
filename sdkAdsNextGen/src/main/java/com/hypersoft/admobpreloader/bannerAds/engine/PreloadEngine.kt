@@ -44,9 +44,11 @@ internal class PreloadEngine(
         registry.markPreloadActive(adUnitId, true)
         val buffer = adInfo.bufferSize ?: 1
 
-        // Use provided AdSize (e.g., adaptive) when available, otherwise fall back to standard BANNER.
+        // Use provided AdSize (e.g., adaptive / MREC) when available, otherwise fall back to standard BANNER.
         val size = adInfo.adSize ?: AdSize.BANNER
-        val request = BannerAdRequest.Builder(adUnitId, size).build()
+        val request = BannerAdRequest.Builder(adUnitId, size).apply {
+            adInfo.extras?.let { setGoogleExtrasBundle(it) }
+        }.build()
         val config = PreloadConfiguration(request, buffer)
 
         try {

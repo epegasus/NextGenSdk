@@ -1,5 +1,6 @@
 package com.hypersoft.admobpreloader.bannerAds.model
 
+import android.os.Bundle
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 
 /**
@@ -10,5 +11,6 @@ data class AdInfo(
     val canShare: Boolean,
     val canReuse: Boolean,
     val bufferSize: Int?,
-    val adSize: AdSize?      // null => use default BANNER; non-null => use this size (e.g., adaptive)
+    val adSize: AdSize?,      // null => use default BANNER; non-null => use this size (e.g., adaptive / MREC)
+    val extras: Bundle?       // optional Google extras (e.g., collapsible top/bottom)
 )
