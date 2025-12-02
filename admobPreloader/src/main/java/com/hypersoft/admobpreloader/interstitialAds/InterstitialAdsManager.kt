@@ -25,10 +25,11 @@ import com.hypersoft.core.storage.SharedPreferencesDataSource
  * - Delegate to PreloadEngine / ShowEngine
  *
  * Public API:
- *  - loadAd(key, listener)
- *  - showAd(activity, key, listener)
- *  - destroyAd(key)
- *  - destroyAllAds()
+ *  @see loadInterstitialAd(key, listener)
+ *  @see showInterstitialAd(activity, key, listener)
+ *  @see destroyInterstitialAd(key)
+ *  @see destroyAllInterstitials()
+ *  @see isAdLoaded()
  */
 class InterstitialAdsManager internal constructor(
     private val resources: Resources,
