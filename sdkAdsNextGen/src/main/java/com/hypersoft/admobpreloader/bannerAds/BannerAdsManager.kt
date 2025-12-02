@@ -68,6 +68,46 @@ class BannerAdsManager internal constructor(
                 bufferSize = null,
                 canShare = false,
                 canReuse = true
+            ),
+            BannerAdKey.DASHBOARD to AdConfig(
+                adUnitId = context.getString(R.string.admob_banner_dashboard_id),
+                isRemoteEnabled = sharedPrefs.rcBannerDashboard != 0,
+                bannerAdType = BannerAdType.COLLAPSIBLE_TOP,
+                bufferSize = null,
+                canShare = true,
+                canReuse = false
+            ),
+            BannerAdKey.FEATURE_ONE_A to AdConfig(
+                adUnitId = context.getString(R.string.admob_banner_feature_one_a_id),
+                isRemoteEnabled = sharedPrefs.rcBannerFeatureOneA != 0,
+                bannerAdType = BannerAdType.COLLAPSIBLE_TOP,
+                bufferSize = null,
+                canShare = false,
+                canReuse = true
+            ),
+            BannerAdKey.FEATURE_ONE_B to AdConfig(
+                adUnitId = context.getString(R.string.admob_banner_feature_one_b_id),
+                isRemoteEnabled = sharedPrefs.rcBannerFeatureOneB != 0,
+                bannerAdType = BannerAdType.COLLAPSIBLE_BOTTOM,
+                bufferSize = null,
+                canShare = false,
+                canReuse = true
+            ),
+            BannerAdKey.FEATURE_TWO_A to AdConfig(
+                adUnitId = context.getString(R.string.admob_banner_feature_two_a_id),
+                isRemoteEnabled = sharedPrefs.rcBannerFeatureTwoA != 0,
+                bannerAdType = BannerAdType.COLLAPSIBLE_TOP,
+                bufferSize = null,
+                canShare = false,
+                canReuse = true
+            ),
+            BannerAdKey.FEATURE_TWO_B to AdConfig(
+                adUnitId = context.getString(R.string.admob_banner_feature_two_b_id),
+                isRemoteEnabled = sharedPrefs.rcBannerFeatureTwoB != 0,
+                bannerAdType = BannerAdType.COLLAPSIBLE_BOTTOM,
+                bufferSize = null,
+                canShare = false,
+                canReuse = true
             )
         )
     }

@@ -4,9 +4,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.hypersoft.admobpreloader.bannerAds.enums.BannerAdKey
 import com.hypersoft.admobpreloader.interstitialAds.callbacks.InterstitialShowListener
 import com.hypersoft.admobpreloader.interstitialAds.enums.InterAdKey
 import com.hypersoft.admobpreloader.nativeAds.enums.NativeAdKey
+import com.hypersoft.admobpreloader.utils.addCleanView
 import dev.pegasus.nextgensdk.R
 import dev.pegasus.nextgensdk.databinding.FragmentDashboardBinding
 import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
@@ -14,6 +16,7 @@ import dev.pegasus.nextgensdk.utils.base.fragment.BaseFragment
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboardBinding::inflate) {
 
     private var nativeAd: NativeAd? = null
+    private var hasDashboardBannerLoaded = false
 
     override fun onViewCreated() {
         loadAds()
@@ -32,6 +35,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
     private fun loadAds() {
         loadInterstitialAd()
         loadNative()
+        loadBanner()
     }
 
     private fun registerBackPress() {
@@ -67,6 +71,22 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
         }
     }
 
+    private fun loadBanner() {
+        if (hasDashboardBannerLoaded) return
+        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.DASHBOARD) {
+            showBanner()
+        }
+    }
+
+    private fun showBanner() {
+        if (isAdded.not()) return
+        val act = activity ?: return
+        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.DASHBOARD)?.let {
+            hasDashboardBannerLoaded = true
+            binding.flBanner.addCleanView(it.getView(act))
+        }
+    }
+
     private fun checkInterstitialAd(caseType: Int) {
         diComponent.interstitialAdsManager.showInterstitialAd(activity, InterAdKey.DASHBOARD, object : InterstitialShowListener {
             override fun onAdFailedToShow(key: String, reason: String) = navigateScreen(caseType)
@@ -86,5 +106,11 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(FragmentDashboa
             0 -> findNavController().navigate(R.id.action_dashboardFragment_to_featureOneFragment)
             1 -> findNavController().navigate(R.id.action_dashboardFragment_to_featureTwoFragment)
         }
+    }
+
+    override fun onDestroyView() {
+        diComponent.bannerAdsManager.clearBannerAd(BannerAdKey.DASHBOARD)
+        hasDashboardBannerLoaded = false
+        super.onDestroyView()
     }
 }

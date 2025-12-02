@@ -6,16 +6,26 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragments.FeatureTwoFragment">
 
+    <FrameLayout
+        android:id="@+id/flBannerTop"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#DCDCDC"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_height="60dp" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/mbBack"
         style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="16dp"
         app:icon="@drawable/ic_svg_back"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/flBannerTop" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/mtvHeading"
@@ -29,5 +39,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.2" />
+
+    <FrameLayout
+        android:id="@+id/flBannerBottom"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#DCDCDC"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_height="60dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

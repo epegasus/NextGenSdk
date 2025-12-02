@@ -29,6 +29,11 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
 
     val bannerEntrance = "bannerEntrance"
     val bannerOnBoarding = "bannerOnBoarding"
+    val bannerDashboard = "bannerDashboard"
+    val bannerFeatureOneA = "bannerFeatureOneA"
+    val bannerFeatureOneB = "bannerFeatureOneB"
+    val bannerFeatureTwoA = "bannerFeatureTwoA"
+    val bannerFeatureTwoB = "bannerFeatureTwoB"
 
     val interEntrance = "interEntrance"
     val interOnBoarding = "interOnBoarding"
@@ -67,6 +72,26 @@ class SharedPreferencesDataSource(private val sharedPreferences: SharedPreferenc
     var rcBannerOnBoarding: Int
         get() = sharedPreferences.getInt(bannerOnBoarding, 1)
         set(value) = sharedPreferences.edit { putInt(bannerOnBoarding, value) }
+
+    var rcBannerDashboard: Int
+        get() = sharedPreferences.getInt(bannerDashboard, 1)
+        set(value) = sharedPreferences.edit { putInt(bannerDashboard, value) }
+
+    var rcBannerFeatureOneA: Int
+        get() = sharedPreferences.getInt(bannerFeatureOneA, 1)
+        set(value) = sharedPreferences.edit { putInt(bannerFeatureOneA, value) }
+
+    var rcBannerFeatureOneB: Int
+        get() = sharedPreferences.getInt(bannerFeatureOneB, 1)
+        set(value) = sharedPreferences.edit { putInt(bannerFeatureOneB, value) }
+
+    var rcBannerFeatureTwoA: Int
+        get() = sharedPreferences.getInt(bannerFeatureTwoA, 1)
+        set(value) = sharedPreferences.edit { putInt(bannerFeatureTwoA, value) }
+
+    var rcBannerFeatureTwoB: Int
+        get() = sharedPreferences.getInt(bannerFeatureTwoB, 1)
+        set(value) = sharedPreferences.edit { putInt(bannerFeatureTwoB, value) }
 
     /**
      *  ------------------- Interstitial Ads -------------------
