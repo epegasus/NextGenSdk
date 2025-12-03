@@ -22,10 +22,13 @@ class FeatureTwoFragment : BaseFragment<FragmentFeatureTwoBinding>(FragmentFeatu
     }
 
     private fun loadBanners() {
-        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.DASHBOARD) {
+        // Top collapsible banner (FEATURE_TWO_A)
+        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.FEATURE_TWO_A) {
             showTopBanner()
         }
-        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.FEATURE_TWO) {
+
+        // Bottom collapsible banner (FEATURE_TWO_B)
+        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.FEATURE_TWO_B) {
             showBottomBanner()
         }
     }
@@ -44,7 +47,7 @@ class FeatureTwoFragment : BaseFragment<FragmentFeatureTwoBinding>(FragmentFeatu
     private fun showTopBanner() {
         if (isAdded.not()) return
         val act = activity ?: return
-        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.DASHBOARD)?.let {
+        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.FEATURE_TWO_A)?.let {
             binding.flBannerTop.addCleanView(it.getView(act))
         }
     }
@@ -52,7 +55,7 @@ class FeatureTwoFragment : BaseFragment<FragmentFeatureTwoBinding>(FragmentFeatu
     private fun showBottomBanner() {
         if (isAdded.not()) return
         val act = activity ?: return
-        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.FEATURE_TWO)?.let {
+        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.FEATURE_TWO_B)?.let {
             binding.flBannerBottom.addCleanView(it.getView(act))
         }
     }

@@ -22,13 +22,13 @@ class FeatureOneFragment : BaseFragment<FragmentFeatureOneBinding>(FragmentFeatu
     }
 
     private fun loadBanners() {
-        // Top collapsible banner – reuse policy will ensure only compatible banners are reused
-        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.DASHBOARD) {
+        // Top collapsible banner (FEATURE_ONE_A)
+        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.FEATURE_ONE_A) {
             showTopBanner()
         }
 
-        // Bottom collapsible banner – feature specific
-        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.FEATURE_ONE) {
+        // Bottom collapsible banner (FEATURE_ONE_B)
+        diComponent.bannerAdsManager.loadBannerAd(BannerAdKey.FEATURE_ONE_B) {
             showBottomBanner()
         }
     }
@@ -47,7 +47,7 @@ class FeatureOneFragment : BaseFragment<FragmentFeatureOneBinding>(FragmentFeatu
     private fun showTopBanner() {
         if (isAdded.not()) return
         val act = activity ?: return
-        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.DASHBOARD)?.let {
+        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.FEATURE_ONE_A)?.let {
             binding.flBannerTop.addCleanView(it.getView(act))
         }
     }
@@ -55,7 +55,7 @@ class FeatureOneFragment : BaseFragment<FragmentFeatureOneBinding>(FragmentFeatu
     private fun showBottomBanner() {
         if (isAdded.not()) return
         val act = activity ?: return
-        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.FEATURE_ONE)?.let {
+        diComponent.bannerAdsManager.pollBannerAd(BannerAdKey.FEATURE_ONE_B)?.let {
             binding.flBannerBottom.addCleanView(it.getView(act))
         }
     }
