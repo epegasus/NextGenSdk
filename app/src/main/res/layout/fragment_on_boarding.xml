@@ -33,11 +33,11 @@
         android:id="@+id/mbContinue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/_continue"
+        app:layout_constraintBottom_toTopOf="@+id/nativeAdView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mtvHeading" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.hypersoft.admobpreloader.nativeAds.views.NativeAdLargeView
         android:id="@+id/nativeAdView"
@@ -46,6 +46,6 @@
         android:background="#DCDCDC"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

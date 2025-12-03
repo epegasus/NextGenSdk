@@ -61,4 +61,9 @@ class OnBoardingFragment : BaseFragment<FragmentOnBoardingBinding>(FragmentOnBoa
     private fun navigateScreen() {
         findNavController().navigate(R.id.action_onBoardingFragment_to_dashboardFragment)
     }
+
+    override fun onDestroyView() {
+        diComponent.bannerAdsManager.clearBannerAd(BannerAdKey.ON_BOARDING)
+        super.onDestroyView()
+    }
 }

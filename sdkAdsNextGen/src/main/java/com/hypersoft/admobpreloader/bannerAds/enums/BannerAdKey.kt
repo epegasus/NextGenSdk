@@ -7,10 +7,10 @@ package com.hypersoft.admobpreloader.bannerAds.enums
  */
 enum class BannerAdKey(val value: String) {
     ENTRANCE("entrance"),
-    ON_BOARDING("on_boarding"),
+    ON_BOARDING("onBoarding"),
     DASHBOARD("dashboard"),
-    FEATURE_ONE_A("feature_one_a"),
-    FEATURE_ONE_B("feature_one_b"),
-    FEATURE_TWO_A("feature_two_a"),
-    FEATURE_TWO_B("feature_two_b"),
+    FEATURE_ONE_A("featureOneA"),
+    FEATURE_ONE_B("featureOneB"),
+    FEATURE_TWO_A("featureTwoA"),
+    FEATURE_TWO_B("featureTwoB"),
 }
