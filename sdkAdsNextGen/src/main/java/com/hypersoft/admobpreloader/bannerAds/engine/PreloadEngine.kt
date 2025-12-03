@@ -99,7 +99,16 @@ internal class PreloadEngine(
     }
 
     fun stopAll() {
-        // Not a direct SDK call for listing preloads; we just clear our state.
+        // Destroy all active preloads before clearing registry
+        // We iterate over registry entries to get all adUnitIds
+        val allAdUnitIds = registry.getAllAdUnitIds()
+        allAdUnitIds.forEach { adUnitId ->
+            try {
+                BannerAdPreloader.destroy(adUnitId)
+            } catch (e: Exception) {
+                AdLogger.logError("", "stopAll (banner)", "Exception destroying $adUnitId: ${e.message}")
+            }
+        }
         registry.clearAll()
     }
 }

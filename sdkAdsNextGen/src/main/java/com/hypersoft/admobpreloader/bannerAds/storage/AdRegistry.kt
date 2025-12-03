@@ -52,4 +52,7 @@ internal class AdRegistry {
 
     fun findAdKeyByUnit(adUnitId: String): BannerAdKey? =
         infoMap.entries.firstOrNull { it.value.adUnitId == adUnitId }?.key
+
+    fun getAllAdUnitIds(): Set<String> =
+        infoMap.values.map { it.adUnitId }.toSet()
 }
